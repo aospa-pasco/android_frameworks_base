@@ -64,6 +64,7 @@ public class StatusBarIconHolder {
     @Deprecated
     public static final int TYPE_WIFI_NEW = 4;
     public static final int TYPE_BLUETOOTH = 5;
+    public static final int TYPE_NETWORK_TRAFFIC = 6;
 
     @IntDef({
             TYPE_ICON,
@@ -215,6 +216,12 @@ public class StatusBarIconHolder {
 
     public void setBluetoothState(BluetoothIconState state) {
         mBluetoothState = state;
+    }
+
+    public static StatusBarIconHolder fromNetworkTraffic() {
+        StatusBarIconHolder holder = new StatusBarIconHolder();
+        holder.mType = TYPE_NETWORK_TRAFFIC;
+        return holder;
     }
 
     public boolean isVisible() {
