@@ -287,6 +287,9 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
     private View mODICaptionsTooltipView = null;
     private boolean mHasAlertSlider;
 
+    // Volume panel placement left or right
+    private boolean mVolumePanelOnLeft;
+
     private final boolean mUseBackgroundBlur;
     private Consumer<Boolean> mCrossWindowBlurEnabledListener;
     private BackgroundBlurDrawable mDialogRowsViewBackground;
@@ -357,6 +360,8 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         mInteractionJankMonitor = interactionJankMonitor;
         mHasAlertSlider =
             mContext.getResources().getBoolean(com.android.internal.R.bool.config_hasAlertSlider);
+        mVolumePanelOnLeft =
+            mContext.getResources().getBoolean(R.bool.config_audioPanelOnLeftSide);
 
         dumpManager.registerDumpable("VolumeDialogImpl", this);
 
@@ -540,6 +545,11 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         lp.windowAnimations = -1;
 
         mOriginalGravity = mContext.getResources().getInteger(R.integer.volume_dialog_gravity);
+        if (!mShowActiveStreamOnly) {
+            // Clear the pre-defined gravity for left or right, this is handled by mVolumePanelOnLeft
+            mOriginalGravity &= ~(Gravity.LEFT | Gravity.RIGHT);
+            mOriginalGravity |= mVolumePanelOnLeft ? Gravity.LEFT : Gravity.RIGHT;
+        }
         mWindowGravity = Gravity.getAbsoluteGravity(mOriginalGravity,
                 mContext.getResources().getConfiguration().getLayoutDirection());
         lp.gravity = mWindowGravity;
