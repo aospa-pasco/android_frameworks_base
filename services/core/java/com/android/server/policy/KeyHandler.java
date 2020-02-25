@@ -29,10 +29,6 @@ import android.hardware.camera2.CameraManager;
 import android.hardware.camera2.CameraManager.TorchCallback;
 import android.hardware.camera2.CameraAccessException;
 import android.hardware.camera2.CameraCharacteristics;
-import android.hardware.Sensor;
-import android.hardware.SensorEvent;
-import android.hardware.SensorEventListener;
-import android.hardware.SensorManager;
 import android.hardware.power.Boost;
 import android.media.AudioManager;
 import android.media.session.MediaSessionLegacyHelper;
@@ -103,15 +99,12 @@ public class KeyHandler {
     private PowerManagerInternal mPowerManagerInternal;
     private String mCameraId;
     private EventHandler mHandler;
-    private SensorManager mSensorManager;
     private CameraManager mCameraManager;
     private AudioManager mAudioManager;
     private TelecomManager mTelecomManager;
     private StatusBarManagerInternal mStatusBarManagerInternal;
     private KeyguardManager mKeyguardManager;
-    private Sensor mProximitySensor;
     private Vibrator mVibrator;
-    private WakeLock mProximityWakeLock;
     private WakeLock mGestureWakeLock;
     private boolean mTorchEnabled;
     private boolean mSystemReady = false;
@@ -150,6 +143,7 @@ public class KeyHandler {
 
     private boolean mGesturesEnabled;
     private boolean mSingleDoubleSpecialCase;
+    private boolean mIsInPocket;
 
     private final SparseIntArray mGestures = new SparseIntArray(MAX_SUPPORTED_GESTURES);
 
@@ -200,7 +194,6 @@ public class KeyHandler {
         ensureTelecomManager();
         ensureVibrator();
         ensurePowerManager();
-        ensureSensors();
         ensureStatusBarService();
         ensureCameraManager();
         ensureKeyguardManager();
@@ -214,6 +207,8 @@ public class KeyHandler {
 
         // Register observers
         registerObservers();
+
+        mIsInPocket = false;
     }
 
     private void getConfiguration() {
@@ -415,16 +410,6 @@ public class KeyHandler {
         }
         if (mPowerManagerInternal == null) {
             mPowerManagerInternal = LocalServices.getService(PowerManagerInternal.class);
-
-        }
-    }
-
-    private void ensureSensors() {
-        if (mSensorManager == null) {
-            mSensorManager = (SensorManager) mContext.getSystemService(Context.SENSOR_SERVICE);
-        }
-        if (mProximitySensor == null) {
-            mProximitySensor = mSensorManager.getDefaultSensor(Sensor.TYPE_PROXIMITY);
         }
     }
 
@@ -444,10 +429,6 @@ public class KeyHandler {
         if (mGestureWakeLock == null) {
             mGestureWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
                     "GestureWakeLock");
-        }
-        if (mProximityWakeLock == null) {
-            mProximityWakeLock = mPowerManager.newWakeLock(PowerManager.PARTIAL_WAKE_LOCK,
-                    "ProximityWakeLock");
         }
     }
 
@@ -669,10 +650,7 @@ public class KeyHandler {
         // If it's held, means we just processed a gesture or we are in the middle of one
         if (isKeySupportedAndEnabled && !mGestureWakeLock.isHeld()) {
             Message msg = getMessageForKeyEvent(event);
-            if (mProximitySensor != null) {
-                mHandler.sendMessageDelayed(msg, 250 /* proximity timeout */);
-                processEvent(event);
-            } else {
+            if (!mIsInPocket) {
                 if (scanCode == mSingleTapKeyCode && mSingleDoubleSpecialCase) {
                     mHandler.sendMessageDelayed(msg, ViewConfiguration.getDoubleTapTimeout());
                 } else {
@@ -685,34 +663,14 @@ public class KeyHandler {
         return isKeySupportedAndEnabled;
     }
 
+    public void setIsInPocket(boolean inPocket) {
+        mIsInPocket = inPocket;
+    }
+
     private Message getMessageForKeyEvent(KeyEvent keyEvent) {
         Message msg = mHandler.obtainMessage(GESTURE_REQUEST);
         msg.obj = keyEvent;
         return msg;
-    }
-
-    private void processEvent(final KeyEvent keyEvent) {
-        mProximityWakeLock.acquire();
-        mSensorManager.registerListener(new SensorEventListener() {
-            @Override
-            public void onSensorChanged(SensorEvent event) {
-                mProximityWakeLock.release();
-                mSensorManager.unregisterListener(this);
-                if (!mHandler.hasMessages(GESTURE_REQUEST)) {
-                    // The sensor took to long, ignoring.
-                    return;
-                }
-                mHandler.removeMessages(GESTURE_REQUEST);
-                if (event.values[0] == mProximitySensor.getMaximumRange()) {
-                    Message msg = getMessageForKeyEvent(keyEvent);
-                    mHandler.sendMessage(msg);
-                }
-            }
-
-            @Override
-            public void onAccuracyChanged(Sensor sensor, int accuracy) { }
-
-        }, mProximitySensor, SensorManager.SENSOR_DELAY_FASTEST);
     }
 
     private boolean dispatchMediaKeyWithWakeLockToMediaSession(int keycode) {
