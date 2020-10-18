@@ -16,13 +16,19 @@
 
 package com.android.systemui.shade
 
+import android.content.Context
+import android.database.ContentObserver
 import android.hardware.display.AmbientDisplayConfiguration
+import android.os.Handler
 import android.os.PowerManager
 import android.os.SystemClock
+import android.os.UserHandle
 import android.provider.Settings
+import android.provider.Settings.System.GESTURE_DOUBLE_TAP
 import android.view.GestureDetector
 import android.view.MotionEvent
 import com.android.systemui.Dumpable
+import com.android.systemui.dagger.qualifiers.Main
 import com.android.systemui.dock.DockManager
 import com.android.systemui.dump.DumpManager
 import com.android.systemui.plugins.FalsingManager
@@ -33,6 +39,7 @@ import com.android.systemui.statusbar.phone.CentralSurfaces
 import com.android.systemui.statusbar.phone.dagger.CentralSurfacesComponent
 import com.android.systemui.tuner.TunerService
 import com.android.systemui.tuner.TunerService.Tunable
+import com.android.systemui.util.settings.SystemSettings
 import java.io.PrintWriter
 import javax.inject.Inject
 
@@ -47,6 +54,7 @@ import javax.inject.Inject
  */
 @CentralSurfacesComponent.CentralSurfacesScope
 class PulsingGestureListener @Inject constructor(
+        private val context: Context,
         private val notificationShadeWindowView: NotificationShadeWindowView,
         private val falsingManager: FalsingManager,
         private val dockManager: DockManager,
@@ -55,10 +63,13 @@ class PulsingGestureListener @Inject constructor(
         private val statusBarStateController: StatusBarStateController,
         private val shadeLogger: ShadeLogger,
         userTracker: UserTracker,
+        @Main private val handler: Handler,
+        systemSettings: SystemSettings,
         tunerService: TunerService,
         dumpManager: DumpManager
 ) : GestureDetector.SimpleOnGestureListener(), Dumpable {
     private var doubleTapEnabled = false
+    private var customDoubleTapEnabled = false
     private var singleTapEnabled = false
 
     init {
@@ -75,6 +86,20 @@ class PulsingGestureListener @Inject constructor(
         tunerService.addTunable(tunable,
                 Settings.Secure.DOZE_DOUBLE_TAP_GESTURE,
                 Settings.Secure.DOZE_TAP_SCREEN_GESTURE)
+
+        val settingsObserver = object : ContentObserver(handler) {
+            override fun onChange(selfChange: Boolean) = update()
+
+            fun update() {
+                customDoubleTapEnabled = systemSettings.getIntForUser(GESTURE_DOUBLE_TAP,
+                        context.resources.getInteger(
+                            com.android.internal.R.integer.config_doubleTapDefault),
+                        UserHandle.USER_CURRENT) == 1
+            }
+        }
+        systemSettings.registerContentObserverForUser(
+                GESTURE_DOUBLE_TAP, settingsObserver, UserHandle.USER_CURRENT)
+        settingsObserver.update()
 
         dumpManager.registerDumpable(this)
     }
@@ -110,7 +135,7 @@ class PulsingGestureListener @Inject constructor(
         // checks MUST be on the ACTION_UP event.
         if (e.actionMasked == MotionEvent.ACTION_UP &&
                 statusBarStateController.isDozing &&
-                (doubleTapEnabled || singleTapEnabled) &&
+                (doubleTapEnabled || customDoubleTapEnabled || singleTapEnabled) &&
                 !falsingManager.isProximityNear &&
                 !falsingManager.isFalseDoubleTap
         ) {
@@ -128,6 +153,7 @@ class PulsingGestureListener @Inject constructor(
     override fun dump(pw: PrintWriter, args: Array<out String>) {
         pw.println("singleTapEnabled=$singleTapEnabled")
         pw.println("doubleTapEnabled=$doubleTapEnabled")
+        pw.println("customDoubleTapEnabled=$customDoubleTapEnabled")
         pw.println("isDocked=${dockManager.isDocked}")
         pw.println("isProxCovered=${falsingManager.isProximityNear}")
     }
