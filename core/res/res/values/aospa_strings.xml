@@ -20,7 +20,6 @@
     <string name="alert_slider_state_path"></string>
     <string name="alert_slider_uevent_match_path"></string>
 
-
     <!-- Cycle through ringer modes -->
     <string name="volume_dialog_ringer_guidance_normal">Calls and notifications will ring</string>
 
@@ -34,5 +33,13 @@
     <string name="pocket_view_top_tag_cancel2">Long press the power button to force quit pocket mode.</string>
     <string name="pocket_view_top_tag_number1" translatable="false">1.\u0020</string>
     <string name="pocket_view_top_tag_number2" translatable="false">2.\u0020</string>
+
+    <!-- Advanced reboot -->
+    <string name="reboot_to_recovery_title">Recovery</string>
+    <string name="reboot_to_recovery_message">Rebooting to recovery</string>
+    <string name="reboot_to_bootloader_title">Bootloader</string>
+    <string name="reboot_to_bootloader_message">Rebooting to bootloader</string>
+    <string name="reboot_title">Reboot</string>
+    <string name="reboot_message">Rebooting system</string>
 
 </resources>
