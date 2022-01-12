@@ -317,5 +317,6 @@ public class SecureSettingsValidators {
             return true;
         });
         VALIDATORS.put(Secure.VOLUME_LINK_NOTIFICATION, BOOLEAN_VALIDATOR);
+        VALIDATORS.put(Secure.SYSTEM_BLACK_THEME, BOOLEAN_VALIDATOR);
     }
 }
