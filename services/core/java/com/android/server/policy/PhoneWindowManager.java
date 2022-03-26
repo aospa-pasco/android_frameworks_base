@@ -596,7 +596,6 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     boolean mHavePendingMediaKeyRepeatWithWakeLock;
 
     private int mCurrentUserId;
-    private boolean haveEnableGesture = false;
 
     // Maps global key codes to the components that will handle them.
     private GlobalKeyManager mGlobalKeyManager;
@@ -673,6 +672,7 @@ public class PhoneWindowManager implements WindowManagerPolicy {
     private boolean mHasAlertSlider = false;
 
     private SwipeToScreenshotListener mSwipeToScreenshot;
+    private boolean mSwipeToScreenshotEnabled = false;
 
     private class PolicyHandler extends Handler {
         @Override
@@ -1799,12 +1799,8 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
 
         mHandler = new PolicyHandler();
-        mSwipeToScreenshot = new SwipeToScreenshotListener(context, new SwipeToScreenshotListener.Callbacks() {
-            @Override
-            public void onSwipeThreeFinger() {
-                mHandler.post(mScreenshotRunnable);
-            }
-        });
+        mSwipeToScreenshot = new SwipeToScreenshotListener(mContext,
+            () -> mHandler.post(mScreenshotRunnable));
         mWakeGestureListener = new MyWakeGestureListener(mContext, mHandler);
         mSettingsObserver = new SettingsObserver(mHandler);
         mSettingsObserver.observe();
@@ -2240,14 +2236,12 @@ public class PhoneWindowManager implements WindowManagerPolicy {
         }
     }
 
-    private void enableSwipeThreeFingerGesture(boolean enable){
-        if (enable) {
-            if (haveEnableGesture) return;
-            haveEnableGesture = true;
+    private void enableSwipeThreeFingerGesture(boolean enabled) {
+        if (mSwipeToScreenshotEnabled == enabled) return;
+        mSwipeToScreenshotEnabled = enabled;
+        if (mSwipeToScreenshotEnabled) {
             mWindowManagerFuncs.registerPointerEventListener(mSwipeToScreenshot, DEFAULT_DISPLAY);
         } else {
-            if (!haveEnableGesture) return;
-            haveEnableGesture = false;
             mWindowManagerFuncs.unregisterPointerEventListener(mSwipeToScreenshot, DEFAULT_DISPLAY);
         }
     }
@@ -2311,9 +2305,10 @@ public class PhoneWindowManager implements WindowManagerPolicy {
             }
 
             //Three Finger Gesture
-            boolean threeFingerGesture = Settings.System.getIntForUser(resolver,
-                    Settings.System.THREE_FINGER_GESTURE, 0, UserHandle.USER_CURRENT) == 1;
-            enableSwipeThreeFingerGesture(threeFingerGesture);
+            final boolean threeFingerGestureEnabled = Settings.System.getIntForUser(resolver,
+                    Settings.System.THREE_FINGER_GESTURE, 0,
+                    UserHandle.USER_CURRENT) == 1;
+            enableSwipeThreeFingerGesture(threeFingerGestureEnabled);
 
             // Configure wake gesture.
             boolean wakeGestureEnabledSetting = Settings.Secure.getIntForUser(resolver,
