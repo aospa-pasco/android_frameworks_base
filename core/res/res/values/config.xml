@@ -4505,12 +4505,13 @@
 
     <!-- Attribution path for SignalDrawable as defined on a 24x24 canvas. -->
     <string name="config_signalAttributionPath" translatable="false">
-        M20,10h2v8h-2z M20,20h2v2h-2z
+        M18.1569 19.161 18.1569 21.9167 16.8292 21.9167 16.8292 15.0227 19.4301 15.0227C20.194 15.0227 20.7692 15.1932 21.1557 15.5341 21.5422 15.875 21.7354 16.3753 21.7354 17.035 21.7354 17.4201 21.6392 17.7358 21.4467 17.982 21.2542 18.2282 20.9715 18.4271 20.5987 18.5786 20.9897 18.7191 21.2663 18.9187 21.4285 19.1918 21.5907 19.4648 21.6717 19.8144 21.6717 20.2405L21.6717 20.7472C21.6717 20.9397 21.696 21.1354 21.7445 21.3343 21.793 21.5331 21.8794 21.6831 22.0037 21.7841L22.0037 21.9167 20.6441 21.9167C20.5198 21.8125 20.4395 21.6428 20.4031 21.4077 20.3668 21.1725 20.3486 20.9492 20.3486 20.7377L20.3486 20.25C20.3486 19.8965 20.266 19.6266 20.1008 19.4403 19.9356 19.2541 19.6862 19.161 19.3528 19.161L18.1569 19.161ZM18.1569 18.0956 19.3028 18.0956C19.6817 18.0956 19.9613 18.0152 20.1417 17.8542 20.3221 17.6932 20.4122 17.4485 20.4122 17.1203 20.4122 16.7951 20.3274 16.5418 20.1576 16.3603 19.9879 16.1788 19.7226 16.0881 19.3619 16.0881L18.1569 16.0881 18.1569 18.0956Z
     </string>
+
     <!-- config_signalCutout{Height,Width}Fraction define fraction of the 24x24 canvas that
          should be cut out to display config_signalAttributionPath. -->
-    <item name="config_signalCutoutWidthFraction" format="float" type="dimen">7</item>
-    <item name="config_signalCutoutHeightFraction" format="float" type="dimen">17</item>
+    <item name="config_signalCutoutWidthFraction" format="float" type="dimen">8</item>
+    <item name="config_signalCutoutHeightFraction" format="float" type="dimen">9</item>
 
     <!-- A dual tone battery meter draws the perimeter path twice - once to define the shape
      and a second time clipped to the fill level to indicate charge -->

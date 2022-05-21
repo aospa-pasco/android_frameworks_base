@@ -187,8 +187,8 @@ public class StatusBarMobileView extends FrameLayout implements DarkReceiver,
             mMobileType.setVisibility(View.GONE);
         }
         mMobile.setVisibility(mState.showTriangle ? View.VISIBLE : View.GONE);
-        mMobileRoaming.setVisibility(mState.roaming ? View.VISIBLE : View.GONE);
-        mMobileRoamingSpace.setVisibility(mState.roaming ? View.VISIBLE : View.GONE);
+        mMobileRoaming.setVisibility(View.GONE);
+        mMobileRoamingSpace.setVisibility(View.GONE);
         mIn.setVisibility(mState.activityIn ? View.VISIBLE : View.GONE);
         mOut.setVisibility(mState.activityOut ? View.VISIBLE : View.GONE);
         mInoutContainer.setVisibility((mState.activityIn || mState.activityOut)
@@ -228,8 +228,8 @@ public class StatusBarMobileView extends FrameLayout implements DarkReceiver,
         }
 
         mMobile.setVisibility(state.showTriangle ? View.VISIBLE : View.GONE);
-        mMobileRoaming.setVisibility(state.roaming ? View.VISIBLE : View.GONE);
-        mMobileRoamingSpace.setVisibility(state.roaming ? View.VISIBLE : View.GONE);
+        mMobileRoaming.setVisibility(View.GONE);
+        mMobileRoamingSpace.setVisibility(View.GONE);
         mIn.setVisibility(state.activityIn ? View.VISIBLE : View.GONE);
         mOut.setVisibility(state.activityOut ? View.VISIBLE : View.GONE);
         mInoutContainer.setVisibility((state.activityIn || state.activityOut)

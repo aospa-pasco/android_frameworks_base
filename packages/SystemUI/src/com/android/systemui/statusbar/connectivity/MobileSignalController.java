@@ -404,7 +404,7 @@ public class MobileSignalController extends SignalController<MobileState, Mobile
             if (mConfig.hideNoInternetState) {
                 cutOut = false;
             }
-            return SignalDrawable.getState(level, getNumLevels(), cutOut);
+            return SignalDrawable.getState(level, getNumLevels(), isRoaming());
         } else if (mCurrentState.enabled) {
             return SignalDrawable.getEmptyState(getNumLevels());
         } else {

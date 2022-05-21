@@ -30,25 +30,26 @@ public class TelephonyIcons {
     //***** Data connection icons
     public static final int FLIGHT_MODE_ICON = R.drawable.stat_sys_airplane_mode;
 
-    public static final int ICON_LTE = R.drawable.ic_lte_mobiledata;
-    public static final int ICON_LTE_PLUS = R.drawable.ic_lte_plus_mobiledata;
-    public static final int ICON_G = R.drawable.ic_g_mobiledata;
-    public static final int ICON_E = R.drawable.ic_e_mobiledata;
-    public static final int ICON_H = R.drawable.ic_h_mobiledata;
-    public static final int ICON_H_PLUS = R.drawable.ic_h_plus_mobiledata;
-    public static final int ICON_3G = R.drawable.ic_3g_mobiledata;
-    public static final int ICON_4G = R.drawable.ic_4g_mobiledata;
-    public static final int ICON_4G_PLUS = R.drawable.ic_4g_plus_mobiledata;
-    public static final int ICON_5G_E = R.drawable.ic_5g_e_mobiledata;
-    public static final int ICON_1X = R.drawable.ic_1x_mobiledata;
-    public static final int ICON_5G = R.drawable.ic_5g_mobiledata;
-    public static final int ICON_5G_PLUS = R.drawable.ic_5g_plus_mobiledata;
+    public static final int ICON_LTE = R.drawable.stat_sys_data_fully_connected_lte;
+    public static final int ICON_LTE_PLUS = R.drawable.stat_sys_data_fully_connected_lte_plus;
+    public static final int ICON_G = R.drawable.stat_sys_data_fully_connected_g;
+    public static final int ICON_E = R.drawable.stat_sys_data_fully_connected_e;
+    public static final int ICON_H = R.drawable.stat_sys_data_fully_connected_h;
+    public static final int ICON_H_PLUS = R.drawable.stat_sys_data_fully_connected_h_plus;
+    public static final int ICON_3G = R.drawable.stat_sys_data_fully_connected_3g;
+    public static final int ICON_4G = R.drawable.stat_sys_data_fully_connected_4g;
+    public static final int ICON_4G_PLUS = R.drawable.stat_sys_data_fully_connected_4g_plus;
+    public static final int ICON_5G_E = R.drawable.stat_sys_data_fully_connected_5g;
+    public static final int ICON_1X = R.drawable.stat_sys_data_fully_connected_1x;
+    public static final int ICON_5G = R.drawable.stat_sys_data_fully_connected_5g;
+    public static final int ICON_5G_PLUS = R.drawable.stat_sys_data_fully_connected_5g;
     public static final int ICON_CWF = R.drawable.ic_carrier_wifi;
-    public static final int ICON_5G_SA = R.drawable.ic_5g_mobiledata;
-    public static final int ICON_5G_BASIC = R.drawable.ic_5g_mobiledata;
-    public static final int ICON_5G_UWB = R.drawable.ic_5g_uwb_mobiledata;
+    public static final int ICON_5G_SA = R.drawable.stat_sys_data_fully_connected_5g;
+    public static final int ICON_5G_BASIC = R.drawable.stat_sys_data_fully_connected_5g;
+    public static final int ICON_5G_UWB = R.drawable.stat_sys_data_fully_connected_5g;
     public static final int ICON_VOWIFI = R.drawable.ic_vowifi;
     public static final int ICON_VOWIFI_CALLING = R.drawable.ic_vowifi_calling;
+    public static final int ICON_DATA_DISABLED = R.drawable.stat_sys_data_disabled;
 
     public static final MobileIconGroup CARRIER_NETWORK_CHANGE = new MobileIconGroup(
             "CARRIER_NETWORK_CHANGE",
@@ -283,7 +284,7 @@ public class TelephonyIcons {
             0,
             AccessibilityContentDescriptions.PHONE_SIGNAL_STRENGTH[0],
             R.string.cell_data_off_content_description,
-            0
+            TelephonyIcons.ICON_DATA_DISABLED
     );
 
     public static final MobileIconGroup NOT_DEFAULT_DATA = new MobileIconGroup(
