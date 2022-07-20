@@ -1,4 +1,15 @@
 java_library {
+    name: "smartspace-proto-java",
+    proto: {
+        type: "nano",
+    },
+    srcs: [
+        "smartspace.proto",
+    ],
+    sdk_version: "current",
+}
+
+java_library {
     name: "vendor-pixelatoms-java",
     vendor: true,
     proto: {
