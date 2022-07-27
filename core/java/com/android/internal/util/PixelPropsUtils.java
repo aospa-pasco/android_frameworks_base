@@ -36,11 +36,15 @@ public class PixelPropsUtils {
     public static final String PACKAGE_ARCORE = "com.google.ar.core";
 
     private static final Map<String, Object> propsToChange;
+    private static final Map<String, Object> propsToChangeP6;
     private static final Map<String, Object> propsToChangeP5;
     private static final Map<String, Object> propsToChangeP1;
     private static final Map<String, ArrayList<String>> propsToKeep;
     private static final String[] extraPackagesToChange = {
         "com.android.chrome"
+    };
+    private static final String[] packagesToChangeP6 = {
+        PACKAGE_GMS
     };
     private static final String[] packagesToChangeP1 = {
          "com.google.android.apps.photos"
@@ -69,6 +73,11 @@ public class PixelPropsUtils {
         propsToChangeP5.put("PRODUCT", "redfin");
         propsToChangeP5.put("MODEL", "Pixel 5");
         propsToChangeP5.put("FINGERPRINT", "google/redfin/redfin:12/SP2A.220505.002/8353555:user/release-keys");
+        propsToChangeP6 = new HashMap<>();
+        propsToChangeP6.put("DEVICE", "raven");
+        propsToChangeP6.put("PRODUCT", "raven");
+        propsToChangeP6.put("MODEL", "Pixel 6 Pro");
+        propsToChangeP6.put("FINGERPRINT", "google/raven/raven:12/SP2A.220505.002/8353555:user/release-keys");
         propsToChangeP1 = new HashMap<>();
         propsToChangeP1.put("DEVICE", "marlin");
         propsToChangeP1.put("PRODUCT", "marlin");
@@ -93,7 +102,9 @@ public class PixelPropsUtils {
         if ((packageName.startsWith("com.google.") && !Arrays.asList(packagesToKeep).contains(packageName))
                 || Arrays.asList(extraPackagesToChange).contains(packageName)) {
             if (DEBUG) Log.d(TAG, "Defining props for: " + packageName);
-            if (Arrays.asList(packagesToChangeP1).contains(packageName)) {
+            if (Arrays.asList(packagesToChangeP6).contains(packageName)) {
+                propsToChange.putAll(propsToChangeP6);
+            } else if (Arrays.asList(packagesToChangeP1).contains(packageName)) {
                 propsToChange.putAll(propsToChangeP1);
             } else {
                 propsToChange.putAll(propsToChangeP5);
