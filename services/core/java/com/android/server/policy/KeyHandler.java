@@ -703,7 +703,7 @@ public class KeyHandler {
                     return;
                 }
                 mHandler.removeMessages(GESTURE_REQUEST);
-                if (event.values[0] >= mProximitySensor.getMaximumRange()) {
+                if (event.values[0] == mProximitySensor.getMaximumRange()) {
                     Message msg = getMessageForKeyEvent(keyEvent);
                     mHandler.sendMessage(msg);
                 }
