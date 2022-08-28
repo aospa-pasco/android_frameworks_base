@@ -63,12 +63,14 @@ import android.graphics.Insets;
 import android.graphics.Rect;
 import android.graphics.Region;
 import android.hardware.biometrics.SensorLocationInternal;
+import android.hardware.display.AmbientDisplayConfiguration;
 import android.hardware.fingerprint.FingerprintSensorPropertiesInternal;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.PowerManager;
 import android.os.Process;
 import android.os.Trace;
+import android.os.UserHandle;
 import android.os.UserManager;
 import android.os.VibrationEffect;
 import android.provider.Settings;
@@ -168,6 +170,7 @@ import com.android.systemui.plugins.FalsingManager.FalsingTapListener;
 import com.android.systemui.plugins.qs.QS;
 import com.android.systemui.plugins.statusbar.StatusBarStateController;
 import com.android.systemui.plugins.statusbar.StatusBarStateController.StateListener;
+import com.android.systemui.settings.UserTracker;
 import com.android.systemui.shade.transition.ShadeTransitionController;
 import com.android.systemui.shared.system.QuickStepContract;
 import com.android.systemui.statusbar.CommandQueue;
@@ -504,6 +507,8 @@ public final class NotificationPanelViewController implements Dumpable {
     private final int mDisplayId;
 
     private GestureDetector mDoubleTapGestureListener;
+    private final AmbientDisplayConfiguration mAmbientDisplayConfiguration;
+    private final UserTracker mUserTracker;
 
     private final KeyguardIndicationController mKeyguardIndicationController;
     private int mHeadsUpInset;
@@ -755,7 +760,8 @@ public final class NotificationPanelViewController implements Dumpable {
             KeyguardTransitionInteractor keyguardTransitionInteractor,
             DumpManager dumpManager,
             KeyguardLongPressViewModel keyguardLongPressViewModel,
-            KeyguardInteractor keyguardInteractor) {
+            KeyguardInteractor keyguardInteractor,
+            UserTracker userTracker) {
         mInteractionJankMonitor = interactionJankMonitor;
         keyguardStateController.addCallback(new KeyguardStateController.Callback() {
             @Override
@@ -900,6 +906,8 @@ public final class NotificationPanelViewController implements Dumpable {
                 return true;
             }
         });
+        mAmbientDisplayConfiguration = new AmbientDisplayConfiguration(mView.getContext());
+        mUserTracker = userTracker;
         mConversationNotificationManager = conversationNotificationManager;
         mAuthController = authController;
         mLockIconViewController = lockIconViewController;
@@ -4840,7 +4848,14 @@ public final class NotificationPanelViewController implements Dumpable {
                 return false;
             }
 
-            if (mBarState == StatusBarState.KEYGUARD) {
+            final boolean isDoubleTapEnabled = mAmbientDisplayConfiguration
+                    .doubleTapGestureEnabled(mUserTracker.getUserId());
+            final boolean isCustomDoubleTapEnabled = Settings.System.getIntForUser(
+                    mView.getContext().getContentResolver(), Settings.System.GESTURE_DOUBLE_TAP,
+                    mView.getContext().getResources().getInteger(
+                        com.android.internal.R.integer.config_doubleTapDefault),
+                    UserHandle.USER_CURRENT) == 1;
+            if (isOnKeyguard() && (isDoubleTapEnabled || isCustomDoubleTapEnabled)) {
                 mDoubleTapGestureListener.onTouchEvent(event);
             }
 
