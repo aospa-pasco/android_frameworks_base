@@ -112,7 +112,6 @@ import com.android.systemui.flags.FeatureFlags;
 import com.android.systemui.flags.Flags;
 import com.android.systemui.screenshot.ScreenshotController.SavedImageData.ActionTransition;
 import com.android.systemui.screenshot.TakeScreenshotService.RequestCallback;
-import com.android.systemui.shared.system.ActivityManagerWrapper;
 import com.android.systemui.shared.system.TaskStackChangeListener;
 import com.android.systemui.shared.system.TaskStackChangeListeners;
 import com.android.systemui.settings.DisplayTracker;
@@ -339,19 +338,21 @@ public class ScreenshotController {
     private final TaskStackChangeListener mTaskListener = new TaskStackChangeListener() {
         @Override
         public void onTaskStackChanged() {
-            mBgExecutor.execute(() -> {
-                try {
-                    final ActivityTaskManager.RootTaskInfo focusedStack =
-                            ActivityTaskManager.getService().getFocusedRootTaskInfo();
-                    if (focusedStack != null && focusedStack.topActivity != null) {
-                        mTaskComponentName = focusedStack.topActivity;
-                    }
-                } catch (Exception e) {
-                    // do nothing
-                }
-            });
+            mBgExecutor.execute(() -> updateForegroundTaskSync());
         }
     };
+
+    private void updateForegroundTaskSync() {
+        try {
+            final ActivityTaskManager.RootTaskInfo focusedStack =
+                    ActivityTaskManager.getService().getFocusedRootTaskInfo();
+            if (focusedStack != null && focusedStack.topActivity != null) {
+                mTaskComponentName = focusedStack.topActivity;
+            }
+        } catch (RemoteException e) {
+            Log.e(TAG, "Failed to get foreground task component", e);
+        }
+    }
 
     private String getForegroundAppLabel() {
         if (mTaskComponentName != null) {
@@ -463,7 +464,7 @@ public class ScreenshotController {
         TaskStackChangeListeners.getInstance().registerTaskStackListener(mTaskListener);
 
         // Initialize current foreground package name
-        mTaskListener.onTaskStackChanged();
+        updateForegroundTaskSync();
     }
 
     void handleScreenshot(ScreenshotData screenshot, Consumer<Uri> finisher,
