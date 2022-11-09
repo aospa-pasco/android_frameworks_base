@@ -5834,6 +5834,12 @@ public final class Settings {
         public static final String CHARGING_CONTROL_LIMIT = "charging_control_charging_limit";
 
         /**
+         * Whether to show advanced reboot options in power menu
+         * @hide
+         */
+        public static final String ADVANCED_REBOOT = "advanced_reboot";
+
+        /**
          * Setting to enable camera flash notification feature.
          * <ul>
          *     <li> 0 = Off
