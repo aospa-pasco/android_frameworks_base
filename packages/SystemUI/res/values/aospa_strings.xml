@@ -42,4 +42,12 @@
     <!-- Name of the network activity indicator on status bar. -->
     <string name="status_bar_network_activity">Network activity</string>
 
+    <!-- SysUI Tuner: Options for how battery is displayed [CHAR LIMIT=NONE] -->
+    <string-array name="battery_options_custom">
+        <item>Only show percentage (without icon)</item>
+        <item>Always show percentage (with icon)</item>
+        <item>Show percentage when charging (default)</item>
+        <item>Don\'t show this icon</item>
+    </string-array>
+
 </resources>
