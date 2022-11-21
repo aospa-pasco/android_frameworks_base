@@ -46,6 +46,9 @@ import com.android.systemui.R
 import com.android.systemui.animation.Interpolators
 import com.android.systemui.animation.ShadeInterpolation
 import com.android.systemui.battery.BatteryMeterView
+import com.android.systemui.battery.BatteryMeterView.BATTERY_STYLE_CIRCLE
+import com.android.systemui.battery.BatteryMeterView.BATTERY_STYLE_DOTTED_CIRCLE
+import com.android.systemui.battery.BatteryMeterView.BATTERY_STYLE_FULL_CIRCLE
 import com.android.systemui.battery.BatteryMeterViewController
 import com.android.systemui.demomode.DemoMode
 import com.android.systemui.demomode.DemoModeController
@@ -74,6 +77,8 @@ import com.android.systemui.util.ViewController
 import java.io.PrintWriter
 import javax.inject.Inject
 import javax.inject.Named
+
+import kotlin.math.roundToInt
 
 /**
  * Controller for QS header.
@@ -283,9 +288,6 @@ constructor(
     override fun onInit() {
         variableDateViewControllerFactory.create(date as VariableDateView).init()
         batteryMeterViewController.init()
-
-        // battery settings same as in QS icons
-        batteryMeterViewController.ignoreTunerUpdates()
 
         iconManager = tintedIconManagerFactory.create(iconContainer, StatusBarLocation.QS)
         iconManager.setTint(
@@ -540,11 +542,16 @@ constructor(
         val textColor = Utils.getColorAttrDefaultColor(context, android.R.attr.textColorPrimary)
         val colorStateList = Utils.getColorAttr(context, android.R.attr.textColorPrimary)
         if (textColor != textColorPrimary) {
-            val textColorSecondary = Utils.getColorAttrDefaultColor(context,
+            var textColorSecondary = Utils.getColorAttrDefaultColor(context,
                     android.R.attr.textColorSecondary)
             textColorPrimary = textColor
             if (iconManager != null) {
                 iconManager.setTint(textColor)
+            }
+            if (batteryIcon.getBatteryStyle() == BATTERY_STYLE_CIRCLE
+                    || batteryIcon.getBatteryStyle() == BATTERY_STYLE_DOTTED_CIRCLE
+                    || batteryIcon.getBatteryStyle() == BATTERY_STYLE_FULL_CIRCLE) {
+                textColorSecondary = reduceColorAlpha(textColor, 0.3f)
             }
             clock.setTextColor(textColorPrimary)
             date.setTextColor(textColorPrimary)
@@ -552,6 +559,14 @@ constructor(
             batteryIcon.updateColors(textColorPrimary, textColorSecondary, textColorPrimary)
         }
         qsBatteryModeController.updateResources()
+    }
+
+    private fun reduceColorAlpha(color: Int, factor: Float): Int {
+        val a: Int = (Color.alpha(color) * factor).roundToInt()
+        val r: Int = Color.red(color)
+        val g: Int = Color.green(color)
+        val b: Int = Color.blue(color)
+        return Color.argb(a, r, g, b)
     }
 
     private fun updateQQSPaddings() {
