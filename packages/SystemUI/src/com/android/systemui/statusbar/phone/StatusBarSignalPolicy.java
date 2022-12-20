@@ -48,6 +48,7 @@ public class StatusBarSignalPolicy implements SignalCallback,
         SecurityController.SecurityControllerCallback, Tunable {
     private static final String TAG = "StatusBarSignalPolicy";
     private static final boolean DEBUG = Log.isLoggable(TAG, Log.DEBUG);
+    private static final String SLOT_ACTIVITY = "network_activity";
 
     private final String mSlotAirplane;
     private final String mSlotMobile;
@@ -158,15 +159,17 @@ public class StatusBarSignalPolicy implements SignalCallback,
         boolean hideWifi = hideList.contains(mSlotWifi);
         boolean hideEthernet = hideList.contains(mSlotEthernet);
         boolean hideVpn = hideList.contains(mSlotVpn);
+        boolean activityEnabled = !hideList.contains(SLOT_ACTIVITY);
 
         if (hideAirplane != mHideAirplane || hideMobile != mHideMobile
                 || hideEthernet != mHideEthernet || hideWifi != mHideWifi
-                || hideVpn != mHideVpn) {
+                || hideVpn != mHideVpn || activityEnabled != mActivityEnabled) {
             mHideAirplane = hideAirplane;
             mHideMobile = hideMobile;
             mHideEthernet = hideEthernet;
             mHideWifi = hideWifi;
             mHideVpn = hideVpn;
+            mActivityEnabled = activityEnabled;
             // Re-register to get new callbacks.
             mNetworkController.removeCallback(this);
             mNetworkController.addCallback(this);
@@ -196,6 +199,7 @@ public class StatusBarSignalPolicy implements SignalCallback,
         } else {
             newState.visible = visible;
             newState.resId = indicators.statusIcon.icon;
+            newState.activityEnabled = mActivityEnabled;
             newState.activityIn = in;
             newState.activityOut = out;
             newState.contentDescription = indicators.statusIcon.contentDescription;
@@ -278,6 +282,7 @@ public class StatusBarSignalPolicy implements SignalCallback,
         state.contentDescription = indicators.statusIcon.contentDescription;
         state.typeContentDescription = indicators.typeContentDescription;
         state.showTriangle = indicators.showTriangle;
+        state.activityEnabled = mActivityEnabled;
         state.activityIn = indicators.activityIn && mActivityEnabled;
         state.activityOut = indicators.activityOut && mActivityEnabled;
         state.volteId = indicators.volteIcon;
@@ -492,6 +497,7 @@ public class StatusBarSignalPolicy implements SignalCallback,
 
     private static abstract class SignalIconState {
         public boolean visible;
+        public boolean activityEnabled;
         public boolean activityOut;
         public boolean activityIn;
         public String slot;
@@ -505,6 +511,7 @@ public class StatusBarSignalPolicy implements SignalCallback,
             }
             SignalIconState that = (SignalIconState) o;
             return visible == that.visible &&
+                    activityEnabled == that.activityEnabled &&
                     activityOut == that.activityOut &&
                     activityIn == that.activityIn &&
                     Objects.equals(contentDescription, that.contentDescription) &&
@@ -513,11 +520,12 @@ public class StatusBarSignalPolicy implements SignalCallback,
 
         @Override
         public int hashCode() {
-            return Objects.hash(visible, activityOut, slot);
+            return Objects.hash(visible, activityEnabled, activityIn, activityOut, slot);
         }
 
         protected void copyTo(SignalIconState other) {
             other.visible = visible;
+            other.activityEnabled = activityEnabled;
             other.activityIn = activityIn;
             other.activityOut = activityOut;
             other.slot = slot;

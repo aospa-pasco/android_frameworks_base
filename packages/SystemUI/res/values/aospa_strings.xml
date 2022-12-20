@@ -39,4 +39,7 @@
     <string name="usage_data_default_suffix">Data</string>
     <string name="usage_wifi_default_suffix">Wi-Fi</string>
 
+    <!-- Name of the network activity indicator on status bar. -->
+    <string name="status_bar_network_activity">Network activity</string>
+
 </resources>

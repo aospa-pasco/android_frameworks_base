@@ -50,9 +50,7 @@ public class StatusBarWifiView extends BaseStatusBarFrameLayout implements DarkR
     private ImageView mWifiIcon;
     private ImageView mWifiStandard;
     private ImageView mVowifi;
-    private ImageView mIn;
-    private ImageView mOut;
-    private View mInoutContainer;
+    private ImageView mInout;
     private View mSignalSpacer;
     private View mAirplaneSpacer;
     private WifiIconState mState;
@@ -91,8 +89,7 @@ public class StatusBarWifiView extends BaseStatusBarFrameLayout implements DarkR
         mWifiIcon.setImageTintList(list);
         mWifiStandard.setImageTintList(list);
         mVowifi.setImageTintList(list);
-        mIn.setImageTintList(list);
-        mOut.setImageTintList(list);
+        mInout.setImageTintList(list);
         mDotView.setDecorColor(color);
     }
 
@@ -157,11 +154,9 @@ public class StatusBarWifiView extends BaseStatusBarFrameLayout implements DarkR
         mWifiIcon = findViewById(R.id.wifi_signal);
         mWifiStandard = findViewById(R.id.wifi_standard);
         mVowifi = findViewById(R.id.vowifi);
-        mIn = findViewById(R.id.wifi_in);
-        mOut = findViewById(R.id.wifi_out);
+        mInout = findViewById(R.id.wifi_inout);
         mSignalSpacer = findViewById(R.id.wifi_signal_spacer);
         mAirplaneSpacer = findViewById(R.id.wifi_airplane_spacer);
-        mInoutContainer = findViewById(R.id.inout_container);
 
         initDotView();
     }
@@ -202,11 +197,8 @@ public class StatusBarWifiView extends BaseStatusBarFrameLayout implements DarkR
             mWifiIcon.setImageDrawable(mContext.getDrawable(state.resId));
         }
         setWifiStandard(state);
+        setInout(state);
         mVowifi.setVisibility(state.vowifiVisible ? View.VISIBLE : View.GONE);
-        mIn.setVisibility(state.activityIn ? View.VISIBLE : View.GONE);
-        mOut.setVisibility(state.activityOut ? View.VISIBLE : View.GONE);
-        mInoutContainer.setVisibility(
-                (state.activityIn || state.activityOut) ? View.VISIBLE : View.GONE);
         mAirplaneSpacer.setVisibility(state.airplaneSpacerVisible ? View.VISIBLE : View.GONE);
         mSignalSpacer.setVisibility(state.signalSpacerVisible ? View.VISIBLE : View.GONE);
 
@@ -230,11 +222,8 @@ public class StatusBarWifiView extends BaseStatusBarFrameLayout implements DarkR
             mWifiIcon.setImageDrawable(mContext.getDrawable(mState.resId));
         }
         setWifiStandard(mState);
+        setInout(mState);
         mVowifi.setVisibility(mState.vowifiVisible ? View.VISIBLE : View.GONE);
-        mIn.setVisibility(mState.activityIn ? View.VISIBLE : View.GONE);
-        mOut.setVisibility(mState.activityOut ? View.VISIBLE : View.GONE);
-        mInoutContainer.setVisibility(
-                (mState.activityIn || mState.activityOut) ? View.VISIBLE : View.GONE);
         mAirplaneSpacer.setVisibility(mState.airplaneSpacerVisible ? View.VISIBLE : View.GONE);
         mSignalSpacer.setVisibility(mState.signalSpacerVisible ? View.VISIBLE : View.GONE);
         setVisibility(mState.visible ? View.VISIBLE : View.GONE);
@@ -261,6 +250,24 @@ public class StatusBarWifiView extends BaseStatusBarFrameLayout implements DarkR
         }
     }
 
+    private void setInout(WifiIconState state) {
+        if (!state.activityEnabled) {
+            mInout.setVisibility(View.GONE);
+            return;
+        }
+        mInout.setVisibility(View.VISIBLE);
+
+        int resId = R.drawable.stat_sys_wifi_no_inout;
+        if (state.activityIn && state.activityOut) {
+            resId = R.drawable.stat_sys_wifi_inout;
+        } else if (state.activityIn) {
+            resId = R.drawable.stat_sys_wifi_in;
+        } else if (state.activityOut) {
+            resId = R.drawable.stat_sys_wifi_out;
+        }
+        mInout.setImageResource(resId);
+    }
+
     @Override
     public void onDarkChanged(ArrayList<Rect> areas, float darkIntensity, int tint) {
         int areaTint = getTint(areas, this, tint);
@@ -268,8 +275,7 @@ public class StatusBarWifiView extends BaseStatusBarFrameLayout implements DarkR
         mWifiIcon.setImageTintList(color);
         mWifiStandard.setImageTintList(color);
         mVowifi.setImageTintList(color);
-        mIn.setImageTintList(color);
-        mOut.setImageTintList(color);
+        mInout.setImageTintList(color);
         mDotView.setDecorColor(areaTint);
         mDotView.setIconColor(areaTint, false);
     }

@@ -90,6 +90,11 @@
         android:icon="@drawable/ic_statusbar_roaming" />
 
     <com.android.systemui.tuner.StatusBarSwitch
+        android:key="network_activity"
+        android:title="@string/status_bar_network_activity"
+        android:icon="@drawable/ic_statusbar_network_activity" />
+
+    <com.android.systemui.tuner.StatusBarSwitch
         android:key="volte"
         android:title="@string/status_bar_volte"
         android:icon="@drawable/ic_statusbar_volte" />
