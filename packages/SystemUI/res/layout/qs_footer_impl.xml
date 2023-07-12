@@ -29,7 +29,7 @@
     android:clipChildren="false"
     android:clipToPadding="false">
 
-        <LinearLayout
+        <com.android.systemui.animation.view.LaunchableLinearLayout
             android:layout_width="match_parent"
             android:layout_height="@dimen/qs_footer_height"
             android:layout_gravity="center_vertical">
@@ -75,6 +75,6 @@
                     android:tint="?attr/onSurfaceVariant" />
             </FrameLayout>
 
-        </LinearLayout>
+        </com.android.systemui.animation.view.LaunchableLinearLayout>
 
 </com.android.systemui.qs.QSFooterView>
