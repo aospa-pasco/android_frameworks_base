@@ -660,18 +660,14 @@ public class MobileSignalController extends SignalController<MobileState, Mobile
 
         mCurrentState.setCarrierId(mPhone.getSimCarrierId());
         String iconKey = mMobileMappingsProxy.getIconKey(mCurrentState.telephonyDisplayInfo);
-        if (mNetworkToIconLookup.get(iconKey) != null) {
+        //Modem has centralized logic to display 5G icon based on carrier requirements
+        //For 5G icon display, only query NrIconType reported by modem
+        if (mFiveGState.isNrIconTypeValid()) {
+            mCurrentState.iconGroup = mFiveGState.getIconGroup();
+        } else if (mNetworkToIconLookup.get(iconKey) != null) {
             mCurrentState.iconGroup = mNetworkToIconLookup.get(iconKey);
         } else {
             mCurrentState.iconGroup = mDefaultIcons;
-        }
-
-        //Modem has centralized logic to display 5G icon based on carrier requirements
-        //For 5G icon display, only query NrIconType reported by modem
-        if ( mFiveGState.isNrIconTypeValid() ) {
-            mCurrentState.iconGroup = mFiveGState.getIconGroup();
-        }else {
-            mCurrentState.iconGroup = getNetworkTypeIconGroup();
         }
 
         mCurrentState.dataConnected = mCurrentState.isDataConnected();
@@ -702,16 +698,16 @@ public class MobileSignalController extends SignalController<MobileState, Mobile
             mCurrentState.networkNameData = mCurrentState.getOperatorAlphaShort();
         }
 
-
-        if ( mConfig.alwaysShowNetworkTypeIcon ) {
-            if(!mCurrentState.connected) {
+        if (mConfig.alwaysShowNetworkTypeIcon) {
+            if (!mCurrentState.connected) {
                 mCurrentState.iconGroup = TelephonyIcons.UNKNOWN;
-            }else if (mFiveGState.isNrIconTypeValid()) {
+            } else if (mFiveGState.isNrIconTypeValid()) {
                 mCurrentState.iconGroup = mFiveGState.getIconGroup();
-            }else {
-                mCurrentState.iconGroup = getNetworkTypeIconGroup();
+            } else if (mNetworkToIconLookup.get(iconKey) != null) {
+                mCurrentState.iconGroup = mNetworkToIconLookup.get(iconKey);
             }
         }
+
         mCurrentState.mobileDataEnabled = mPhone.isDataEnabled();
         mCurrentState.roamingDataEnabled = mPhone.isDataRoamingEnabled();
 
@@ -834,25 +830,6 @@ public class MobileSignalController extends SignalController<MobileState, Mobile
         client.unregisterListener(phoneId);
     }
 
-    private MobileIconGroup getNetworkTypeIconGroup() {
-        MobileIconGroup iconGroup = mDefaultIcons;
-        int overrideNetworkType = mCurrentState.telephonyDisplayInfo.getOverrideNetworkType();
-        String iconKey = null;
-        if (overrideNetworkType == TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NONE
-                || overrideNetworkType == TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NR_NSA_MMWAVE
-                || overrideNetworkType == TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NR_NSA ){
-            int networkType = mCurrentState.telephonyDisplayInfo.getNetworkType();
-            if (networkType == TelephonyManager.NETWORK_TYPE_UNKNOWN) {
-                networkType = mCurrentState.getVoiceNetworkType();
-            }
-            iconKey = toIconKey(networkType);
-        } else{
-            iconKey = toDisplayIconKey(overrideNetworkType);
-        }
-
-        return mNetworkToIconLookup.getOrDefault(iconKey, mDefaultIcons);
-    }
-
     private boolean showDataRatIcon() {
         boolean result = false;
         if ( mCurrentState.mobileDataEnabled ) {
@@ -873,10 +850,11 @@ public class MobileSignalController extends SignalController<MobileState, Mobile
 
     private MobileIconGroup getRatIconGroup() {
         MobileIconGroup iconGroup = mDefaultIcons;
-        if ( mFiveGState.isNrIconTypeValid() ) {
+	String iconKey = mMobileMappingsProxy.getIconKey(mCurrentState.telephonyDisplayInfo);
+        if (mFiveGState.isNrIconTypeValid()) {
             iconGroup = mFiveGState.getIconGroup();
-        }else {
-            iconGroup = getNetworkTypeIconGroup();
+        } else if (mNetworkToIconLookup.get(iconKey) != null) {
+            mCurrentState.iconGroup = mNetworkToIconLookup.get(iconKey);
         }
         return iconGroup;
     }
