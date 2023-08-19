@@ -25,10 +25,13 @@ import android.net.wifi.WifiManager;
 import android.telephony.ServiceState;
 import android.telephony.SubscriptionInfo;
 import android.telephony.TelephonyCallback.ActiveDataSubscriptionIdListener;
+import android.telephony.TelephonyCallback;
+import android.telephony.TelephonyDisplayInfo;
 import android.telephony.TelephonyManager;
 import android.text.TextUtils;
 import android.util.Log;
 
+import androidx.annotation.NonNull;
 import androidx.annotation.Nullable;
 import androidx.annotation.VisibleForTesting;
 
@@ -94,6 +97,7 @@ public class CarrierTextManager {
     private FiveGServiceClient mFiveGServiceClient;
     private CarrierNameCustomization mCarrierNameCustomization;
     private boolean mShowCustomizeName;
+    private TelephonyDisplayInfo mTelephonyDisplayInfo;
     @VisibleForTesting
     protected final KeyguardUpdateMonitorCallback mCallback = new KeyguardUpdateMonitorCallback() {
         @Override
@@ -142,6 +146,17 @@ public class CarrierTextManager {
             }
         }
     };
+
+    private class CarrierTextManagerTelephonyCallback extends TelephonyCallback implements
+            TelephonyCallback.DisplayInfoListener {
+        @Override
+        public void onDisplayInfoChanged(@NonNull TelephonyDisplayInfo displayInfo) {
+            mTelephonyDisplayInfo = displayInfo;
+            updateCarrierText();
+        }
+    }
+
+    private final CarrierTextManagerTelephonyCallback mTelephonyCallback = new CarrierTextManagerTelephonyCallback();
 
     /**
      * The status of this lock screen. Primarily used for widgets on LockScreen.
@@ -275,6 +290,7 @@ public class CarrierTextManager {
                     mWakefulnessLifecycle.addObserver(mWakefulnessObserver);
                 });
                 mTelephonyListenerManager.addActiveDataSubscriptionIdListener(mPhoneStateListener);
+                mTelephonyManager.registerTelephonyCallback(mMainExecutor, mTelephonyCallback);
             } else {
                 // Don't listen and clear out the text when the device isn't a phone.
                 mMainExecutor.execute(() -> callback.updateCarrierInfo(
@@ -288,6 +304,7 @@ public class CarrierTextManager {
                 mWakefulnessLifecycle.removeObserver(mWakefulnessObserver);
             });
             mTelephonyListenerManager.removeActiveDataSubscriptionIdListener(mPhoneStateListener);
+            mTelephonyManager.unregisterTelephonyCallback(mTelephonyCallback);
         }
     }
 
@@ -826,7 +843,7 @@ public class CarrierTextManager {
         if (ss != null && (ss.getDataRegState() == ServiceState.STATE_IN_SERVICE
                 || ss.getVoiceRegState() == ServiceState.STATE_IN_SERVICE)) {
             networkType = ss.getDataNetworkType();
-            if (networkType == TelephonyManager.NETWORK_TYPE_UNKNOWN) {
+            if (networkType == TelephonyManager.NETWORK_TYPE_IWLAN || networkType == TelephonyManager.NETWORK_TYPE_UNKNOWN) {
                 networkType = ss.getVoiceNetworkType();
             }
         }
@@ -834,24 +851,30 @@ public class CarrierTextManager {
     }
 
     private String networkTypeToString(int networkType) {
+        boolean is5GNsa = false;
+        if (mTelephonyDisplayInfo != null) {
+            is5GNsa = networkType == TelephonyManager.NETWORK_TYPE_LTE
+                    && (mTelephonyDisplayInfo.getOverrideNetworkType() == TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NR_NSA
+                    || mTelephonyDisplayInfo.getOverrideNetworkType() == TelephonyDisplayInfo.OVERRIDE_NETWORK_TYPE_NR_ADVANCED);
+        }
         int classId = com.android.systemui.R.string.config_rat_unknown;
         long mask = TelephonyManager.getBitMaskForNetworkType(networkType);
         if ((mask & TelephonyManager.NETWORK_CLASS_BITMASK_2G) != 0) {
           classId = com.android.systemui.R.string.config_rat_2g;
         } else if ((mask & TelephonyManager.NETWORK_CLASS_BITMASK_3G) != 0) {
           classId = com.android.systemui.R.string.config_rat_3g;
-        } else if ((mask & TelephonyManager.NETWORK_CLASS_BITMASK_4G) != 0) {
+        } else if (is5GNsa) {
+          return mContext.getResources().getString(R.string.data_connection_5g);
+        } else if (networkType == TelephonyManager.NETWORK_TYPE_LTE 
+                        || networkType == TelephonyManager.NETWORK_TYPE_LTE_CA) {
           classId = com.android.systemui.R.string.config_rat_4g;
+        } else if (networkType == TelephonyManager.NETWORK_TYPE_NR) {
+          return mContext.getResources().getString(R.string.data_connection_5g);
         }
         return getContext().getResources().getString(classId);
     }
 
-
     private String get5GNetworkClass(SubscriptionInfo sub, int networkType) {
-        if ( networkType == TelephonyManager.NETWORK_TYPE_NR ) {
-            return mContext.getResources().getString(R.string.data_connection_5g);
-        }
-
         int slotIndex = sub.getSimSlotIndex();
         int subId = sub.getSubscriptionId();
 
@@ -861,22 +884,10 @@ public class CarrierTextManager {
         }
         FiveGServiceState fiveGServiceState =
                 mFiveGServiceClient.getCurrentServiceState(slotIndex);
-        if ( fiveGServiceState.isNrIconTypeValid() && isDataRegisteredOnLte(subId)) {
+        if (fiveGServiceState.isNrIconTypeValid()) {
             return mContext.getResources().getString(R.string.data_connection_5g);
         }
 
         return null;
-    }
-
-    private boolean isDataRegisteredOnLte(int subId) {
-        TelephonyManager telephonyManager = (TelephonyManager)
-                mContext.getSystemService(Context.TELEPHONY_SERVICE);
-        int dataType = telephonyManager.getDataNetworkType(subId);
-        if (  dataType == TelephonyManager.NETWORK_TYPE_LTE ||
-                dataType == TelephonyManager.NETWORK_TYPE_LTE_CA) {
-            return true;
-        }else{
-            return false;
-        }
     }
 }
