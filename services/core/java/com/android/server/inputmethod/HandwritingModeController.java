@@ -143,7 +143,6 @@ final class HandwritingModeController {
 
     OptionalInt getCurrentRequestId() {
         if (mHandwritingSurface == null) {
-            Slog.e(TAG, "Cannot get requestId: Handwriting was not initialized.");
             return OptionalInt.empty();
         }
         return OptionalInt.of(mCurrentRequestId);
