@@ -38,6 +38,7 @@ import android.util.Log;
 import android.util.Pair;
 
 import com.android.internal.annotations.GuardedBy;
+import com.android.internal.config.sysui.SystemUiDeviceConfigFlags;
 import com.android.internal.util.Preconditions;
 
 import java.util.Arrays;
@@ -850,6 +851,10 @@ public final class DeviceConfig {
     @RequiresPermission(READ_DEVICE_CONFIG)
     public static boolean getBoolean(@NonNull String namespace, @NonNull String name,
             boolean defaultValue) {
+        if (namespace.equals(NAMESPACE_SYSTEMUI) && name.equals(
+                    SystemUiDeviceConfigFlags.VOLUME_SEPARATE_NOTIFICATION)) {
+            return true;
+        }
         String value = getProperty(namespace, name);
         return value != null ? Boolean.parseBoolean(value) : defaultValue;
     }
@@ -1333,6 +1338,10 @@ public final class DeviceConfig {
          */
         public boolean getBoolean(@NonNull String name, boolean defaultValue) {
             Preconditions.checkNotNull(name);
+            if (mNamespace.equals(NAMESPACE_SYSTEMUI) && name.equals(
+                    SystemUiDeviceConfigFlags.VOLUME_SEPARATE_NOTIFICATION)) {
+                return true;
+            }
             String value = mMap.get(name);
             return value != null ? Boolean.parseBoolean(value) : defaultValue;
         }
