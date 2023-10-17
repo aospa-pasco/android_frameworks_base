@@ -98,6 +98,7 @@ class HighBrightnessModeController {
     private boolean mIsHdrLayerPresent = false;
     private boolean mIsThermalStatusWithinLimit = true;
     private boolean mIsBlockedByLowPowerMode = false;
+    private boolean mForceHbm = false;
     private int mWidth;
     private int mHeight;
     private float mAmbientLux;
@@ -280,10 +281,7 @@ class HighBrightnessModeController {
                 mIsThermalStatusWithinLimit = true;
                 mSkinThermalStatusObserver.startObserving();
             }
-            if (!mHbmData.allowInLowPowerMode) {
-                mIsBlockedByLowPowerMode = false;
-                mSettingsObserver.startObserving();
-            }
+            mSettingsObserver.startObserving();
         }
     }
 
@@ -314,6 +312,7 @@ class HighBrightnessModeController {
         pw.println("  mIsAutoBrightnessEnabled=" + mIsAutoBrightnessEnabled);
         pw.println("  mIsAutoBrightnessOffByState=" + mIsAutoBrightnessOffByState);
         pw.println("  mIsHdrLayerPresent=" + mIsHdrLayerPresent);
+        pw.println("  mForceHbm=" + mForceHbm);
         pw.println("  mBrightnessMin=" + mBrightnessMin);
         pw.println("  mBrightnessMax=" + mBrightnessMax);
         pw.println("  remainingTime=" + calculateRemainingTime(mClock.uptimeMillis()));
@@ -359,7 +358,8 @@ class HighBrightnessModeController {
         // brightness maximum; so we implement HDR-HBM in a way that doesn't adjust the max.
         // See {@link #getHdrBrightnessValue}.
         return !mIsHdrLayerPresent
-                && ((mIsAutoBrightnessEnabled && mIsTimeAvailable && mIsInAllowedAmbientRange)
+                && (mForceHbm
+                    || (mIsAutoBrightnessEnabled && mIsTimeAvailable && mIsInAllowedAmbientRange)
                     || (!mIsAutoBrightnessEnabled && mHbmData.timeWindowMillis == 0))
                 && mIsThermalStatusWithinLimit && !mIsBlockedByLowPowerMode;
     }
@@ -458,6 +458,7 @@ class HighBrightnessModeController {
                     + ", remainingAllowedTime: " + remainingTime
                     + ", isLuxHigh: " + mIsInAllowedAmbientRange
                     + ", isHBMCurrentlyAllowed: " + isCurrentlyAllowed()
+                    + ", isForceHbm: " + mForceHbm
                     + ", isHdrLayerPresent: " + mIsHdrLayerPresent
                     + ", isAutoBrightnessEnabled: " +  mIsAutoBrightnessEnabled
                     + ", mIsTimeAvailable: " + mIsTimeAvailable
@@ -693,6 +694,7 @@ class HighBrightnessModeController {
     private final class SettingsObserver extends ContentObserver {
         private final Uri mLowPowerModeSetting = Settings.Global.getUriFor(
                 Settings.Global.LOW_POWER_MODE);
+        private final Uri mForceHbmSetting = Settings.System.getUriFor(Settings.System.FORCE_HBM);
         private boolean mStarted;
 
         SettingsObserver(Handler handler) {
@@ -701,20 +703,28 @@ class HighBrightnessModeController {
 
         @Override
         public void onChange(boolean selfChange, Uri uri) {
-            updateLowPower();
+            if (uri.equals(mLowPowerModeSetting)) {
+                updateLowPower();
+            } else if (uri.equals(mForceHbmSetting)) {
+                updateForceHbm();
+            }
         }
 
         void startObserving() {
             if (!mStarted) {
                 mContext.getContentResolver().registerContentObserver(mLowPowerModeSetting,
                         false /*notifyForDescendants*/, this, UserHandle.USER_ALL);
+                mContext.getContentResolver().registerContentObserver(mForceHbmSetting,
+                        false /*notifyForDescendants*/, this, UserHandle.USER_CURRENT);
                 mStarted = true;
                 updateLowPower();
+                updateForceHbm();
             }
         }
 
         void stopObserving() {
             mIsBlockedByLowPowerMode = false;
+            mForceHbm = false;
             if (mStarted) {
                 mContext.getContentResolver().unregisterContentObserver(this);
                 mStarted = false;
@@ -737,6 +747,21 @@ class HighBrightnessModeController {
         private boolean isLowPowerMode() {
             return Settings.Global.getInt(
                     mContext.getContentResolver(), Settings.Global.LOW_POWER_MODE, 0) != 0;
+        }
+
+        private void updateForceHbm() {
+            final boolean forceHbm = Settings.System.getIntForUser(mContext.getContentResolver(),
+                    Settings.System.FORCE_HBM, 0, UserHandle.USER_CURRENT) == 1;
+            Slog.d(TAG, "updateForceHbm: " + forceHbm + " mForceHbm=" + mForceHbm);
+            if (forceHbm == mForceHbm) {
+                return;
+            }
+            if (DEBUG) {
+                Slog.d(TAG, "Settings.System.FORCE_HBM enabled: " + forceHbm);
+            }
+            mForceHbm = forceHbm;
+            // this recalculates HbmMode and runs mHbmChangeCallback if the mode has changed
+            updateHbmMode();
         }
     }
 

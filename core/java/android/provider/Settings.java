@@ -5825,6 +5825,12 @@ public final class Settings {
         public static final String SMART_5G = "smart_5g";
 
         /**
+         * Whether to enable force enable HBM
+         * @hide
+         */
+        public static final String FORCE_HBM = "force_hbm";
+
+        /**
          * These are all public system settings
          *
          * @hide
