@@ -178,6 +178,12 @@ public class StatusBarIconHolder {
         return holder;
     }
 
+    public static StatusBarIconHolder forNetworkTraffic() {
+        StatusBarIconHolder holder = new StatusBarIconHolder();
+        holder.mType = TYPE_NETWORK_TRAFFIC;
+        return holder;
+    }
+
     public @IconType int getType() {
         return mType;
     }
@@ -216,12 +222,6 @@ public class StatusBarIconHolder {
 
     public void setBluetoothState(BluetoothIconState state) {
         mBluetoothState = state;
-    }
-
-    public static StatusBarIconHolder fromNetworkTraffic() {
-        StatusBarIconHolder holder = new StatusBarIconHolder();
-        holder.mType = TYPE_NETWORK_TRAFFIC;
-        return holder;
     }
 
     public boolean isVisible() {

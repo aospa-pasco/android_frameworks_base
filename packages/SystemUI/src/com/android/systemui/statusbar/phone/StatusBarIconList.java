@@ -23,13 +23,13 @@ import android.annotation.Nullable;
 
 import com.android.internal.annotations.VisibleForTesting;
 
+import com.android.systemui.statusbar.StatusBarNetworkTrafficView;
+
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
-
-import com.android.systemui.statusbar.policy.NetworkTrafficSB;
 
 /** A class holding the list of all the system icons that could be shown in the status bar. */
 public class StatusBarIconList {
@@ -42,8 +42,9 @@ public class StatusBarIconList {
             mSlots.add(new Slot(slots[i], null));
         }
 
-        // Network traffic slot
-        mSlots.add(0, new Slot(NetworkTrafficSB.SLOT, StatusBarIconHolder.fromNetworkTraffic()));
+        // Add network traffic at the beginning (left-most)
+        mSlots.add(0, new Slot(StatusBarNetworkTrafficView.SLOT,
+                StatusBarIconHolder.forNetworkTraffic()));
     }
 
     /** Returns the list of current slots. */

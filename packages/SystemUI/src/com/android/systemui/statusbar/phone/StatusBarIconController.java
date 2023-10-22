@@ -46,6 +46,7 @@ import com.android.systemui.statusbar.BaseStatusBarFrameLayout;
 import com.android.systemui.statusbar.StatusBarBluetoothView;
 import com.android.systemui.statusbar.StatusBarIconView;
 import com.android.systemui.statusbar.StatusBarMobileView;
+import com.android.systemui.statusbar.StatusBarNetworkTrafficView;
 import com.android.systemui.statusbar.StatusBarWifiView;
 import com.android.systemui.statusbar.StatusIconDisplayable;
 import com.android.systemui.statusbar.connectivity.ui.MobileContextProvider;
@@ -61,7 +62,6 @@ import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.MobileIconsVi
 import com.android.systemui.statusbar.pipeline.wifi.ui.WifiUiAdapter;
 import com.android.systemui.statusbar.pipeline.wifi.ui.view.ModernStatusBarWifiView;
 import com.android.systemui.statusbar.pipeline.wifi.ui.viewmodel.LocationBasedWifiViewModel;
-import com.android.systemui.statusbar.policy.NetworkTrafficSB;
 import com.android.systemui.util.Assert;
 
 import java.util.ArrayList;
@@ -588,8 +588,8 @@ public interface StatusBarIconController {
             return view;
         }
 
-        protected NetworkTrafficSB addNetworkTraffic(int index, String slot) {
-            NetworkTrafficSB view = onCreateNetworkTraffic(slot);
+        protected StatusBarNetworkTrafficView addNetworkTraffic(int index, String slot) {
+            StatusBarNetworkTrafficView view = new StatusBarNetworkTrafficView(mContext);
             mGroup.addView(view, index, onCreateLayoutParams());
             return view;
         }
@@ -629,12 +629,6 @@ public interface StatusBarIconController {
                             slot,
                             mMobileIconsViewModel.viewModelForSub(subId, mLocation)
                         );
-        }
-
-        private NetworkTrafficSB onCreateNetworkTraffic(String slot) {
-            NetworkTrafficSB view = new NetworkTrafficSB(mContext);
-            view.setPadding(2, 0, 2, 0);
-            return view;
         }
 
         protected LinearLayout.LayoutParams onCreateLayoutParams() {
