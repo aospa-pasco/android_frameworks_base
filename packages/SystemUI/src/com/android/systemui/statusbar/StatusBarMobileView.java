@@ -251,11 +251,16 @@ public class StatusBarMobileView extends BaseStatusBarFrameLayout implements Dar
 
     // Sets the mobile type icon and network activity indicators.
     private void updateMobileTypeLayout(MobileIconState state) {
+        int paddingTop = (state.activityEnabled && state.volteId != 0) ? getContext().getResources()
+                .getDimensionPixelSize(R.dimen.mobile_signal_icon_padding_top) : 0;
+        mMobile.setPadding(0, paddingTop, 0, 0);
+
         if (state.typeId == 0) {
             // Container is hidden, nothing else to do here.
             mMobileTypeContainer.setVisibility(View.GONE);
             return;
         }
+
         mMobileTypeContainer.setVisibility(View.VISIBLE);
 
         int inset = getContext().getResources().getDimensionPixelSize(
@@ -264,13 +269,13 @@ public class StatusBarMobileView extends BaseStatusBarFrameLayout implements Dar
                 getContext().getDrawable(state.typeId), 0, inset, 0, inset));
         mMobileType.setContentDescription(state.typeContentDescription);
 
-        LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams)
-                mMobileType.getLayoutParams();
+        LinearLayout.LayoutParams lp = (LinearLayout.LayoutParams) mMobileType.getLayoutParams();
         lp.height = getContext().getResources().getDimensionPixelSize(state.activityEnabled
                 ? R.dimen.mobile_type_icon_height_with_activity
                 : R.dimen.mobile_type_icon_height);
-        int vMargin = state.activityEnabled ? 0 : getContext().getResources()
-                .getDimensionPixelSize(R.dimen.mobile_type_icon_margin_vertical);
+        int vMargin = getContext().getResources().getDimensionPixelSize(state.activityEnabled
+                ? R.dimen.mobile_type_icon_margin_vertical_with_activity
+                : R.dimen.mobile_type_icon_margin_vertical);
         lp.setMargins(0, vMargin, 0, vMargin);
         mMobileType.setLayoutParams(lp);
 
@@ -297,10 +302,6 @@ public class StatusBarMobileView extends BaseStatusBarFrameLayout implements Dar
             resId = R.drawable.stat_sys_data_out;
         }
         mInout.setImageResource(resId);
-    }
-
-    private void updateMobileTypeLayout() {
-        updateMobileTypeLayout(mState);
     }
 
     @Override

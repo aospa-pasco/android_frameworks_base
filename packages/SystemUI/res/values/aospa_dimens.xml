@@ -29,6 +29,8 @@
     <dimen name="mobile_type_icon_height">12dp</dimen>
     <dimen name="mobile_type_icon_height_with_activity">8dp</dimen>
     <dimen name="mobile_type_icon_margin_vertical">1.5dp</dimen>
+    <dimen name="mobile_type_icon_margin_vertical_with_activity">1dp</dimen>
     <dimen name="mobile_type_icon_inset_vertical">-2dp</dimen>
+    <dimen name="mobile_signal_icon_padding_top">1dp</dimen>
 
 </resources>

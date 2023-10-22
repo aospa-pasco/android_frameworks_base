@@ -39,7 +39,8 @@
             android:layout_height="15dp"
             android:layout_gravity="center_vertical"
             android:orientation="vertical"
-            android:paddingHorizontal="2dp"
+            android:paddingStart="3dp"
+            android:paddingEnd="2dp"
             android:visibility="gone">
             <ImageView
                 android:id="@+id/mobile_type"
@@ -52,11 +53,11 @@
                 android:adjustViewBounds="true" />
             <ImageView
                 android:id="@+id/mobile_inout"
-                android:layout_height="7dp"
+                android:layout_height="4dp"
                 android:layout_width="wrap_content"
                 android:layout_gravity="center_horizontal"
+                android:layout_marginBottom="1dp"
                 android:gravity="center"
-                android:paddingTop="1dp"
                 android:scaleType="centerInside"
                 android:adjustViewBounds="true"
                 android:visibility="gone" />

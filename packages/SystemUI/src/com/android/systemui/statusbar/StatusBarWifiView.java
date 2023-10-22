@@ -51,7 +51,7 @@ public class StatusBarWifiView extends BaseStatusBarFrameLayout implements DarkR
     private ImageView mWifiStandard;
     private ImageView mVowifi;
     private ImageView mInout;
-    private View mSignalSpacer;
+    private View mSignalSpacer, mInoutSpacer;
     private View mAirplaneSpacer;
     private WifiIconState mState;
     private String mSlot;
@@ -155,6 +155,7 @@ public class StatusBarWifiView extends BaseStatusBarFrameLayout implements DarkR
         mWifiStandard = findViewById(R.id.wifi_standard);
         mVowifi = findViewById(R.id.vowifi);
         mInout = findViewById(R.id.wifi_inout);
+        mInoutSpacer = findViewById(R.id.wifi_inout_spacer);
         mSignalSpacer = findViewById(R.id.wifi_signal_spacer);
         mAirplaneSpacer = findViewById(R.id.wifi_airplane_spacer);
 
@@ -253,9 +254,11 @@ public class StatusBarWifiView extends BaseStatusBarFrameLayout implements DarkR
     private void setInout(WifiIconState state) {
         if (!state.activityEnabled) {
             mInout.setVisibility(View.GONE);
+            mInoutSpacer.setVisibility(View.GONE);
             return;
         }
         mInout.setVisibility(View.VISIBLE);
+        mInoutSpacer.setVisibility(View.VISIBLE);
 
         int resId = R.drawable.stat_sys_wifi_no_inout;
         if (state.activityIn && state.activityOut) {

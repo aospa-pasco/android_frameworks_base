@@ -35,6 +35,12 @@
             android:src="@drawable/ic_vowifi"
             android:visibility="gone" />
 
+        <View
+            android:id="@+id/wifi_inout_spacer"
+            android:layout_width="2dp"
+            android:layout_height="4dp"
+            android:visibility="gone" />
+
         <FrameLayout
                 android:id="@+id/inout_container"
                 android:layout_height="17dp"
