@@ -29,6 +29,7 @@ import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.database.ContentObserver;
 import android.media.AudioManager;
 import android.net.wifi.ScanResult;
 import android.net.wifi.WifiManager;
@@ -36,6 +37,7 @@ import android.os.Handler;
 import android.os.Looper;
 import android.os.RemoteException;
 import android.os.UserManager;
+import android.provider.Settings;
 import android.provider.Settings.Global;
 import android.service.notification.ZenModeConfig;
 import android.telecom.TelecomManager;
@@ -128,6 +130,7 @@ public class PhoneStatusBarPolicy
     private final DateFormatUtil mDateFormatUtil;
     private final TelecomManager mTelecomManager;
 
+    private final Context mContext;
     private final Handler mHandler;
     private final CastController mCast;
     private final HotspotController mHotspot;
@@ -159,6 +162,7 @@ public class PhoneStatusBarPolicy
     private boolean mVibrateVisible;
     private boolean mMuteVisible;
     private boolean mCurrentUserSetup;
+    private boolean mSeparateNotification;
 
     private boolean mManagedProfileIconVisible = false;
 
@@ -166,7 +170,8 @@ public class PhoneStatusBarPolicy
     private AlarmManager.AlarmClockInfo mNextAlarm;
 
     @Inject
-    public PhoneStatusBarPolicy(StatusBarIconController iconController,
+    public PhoneStatusBarPolicy(Context context,
+            StatusBarIconController iconController,
             CommandQueue commandQueue, BroadcastDispatcher broadcastDispatcher,
             @Main Executor mainExecutor, @UiBackground Executor uiBgExecutor, @Main Looper looper,
             @Main Resources resources, CastController castController,
@@ -185,6 +190,7 @@ public class PhoneStatusBarPolicy
             RingerModeTracker ringerModeTracker,
             PrivacyItemController privacyItemController,
             PrivacyLogger privacyLogger) {
+        mContext = context;
         mIconController = iconController;
         mCommandQueue = commandQueue;
         mBroadcastDispatcher = broadcastDispatcher;
@@ -277,9 +283,13 @@ public class PhoneStatusBarPolicy
         mIconController.setIcon(mSlotVibrate, R.drawable.stat_sys_ringer_vibrate,
                 mResources.getString(R.string.accessibility_ringer_vibrate));
         mIconController.setIconVisibility(mSlotVibrate, false);
+
         // mute
-        mIconController.setIcon(mSlotMute, R.drawable.stat_sys_ringer_silent,
-                mResources.getString(R.string.accessibility_ringer_silent));
+        mSeparateNotification = isSeparateNotification();
+        mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                Settings.System.VOLUME_SEPARATE_NOTIFICATION), false, mSettingObserver);
+        updateMuteIcon();
+
         mIconController.setIconVisibility(mSlotMute, false);
         updateVolumeZen();
 
@@ -294,7 +304,6 @@ public class PhoneStatusBarPolicy
         mIconController.setIcon(mSlotDataSaver, R.drawable.stat_sys_data_saver,
                 mResources.getString(R.string.accessibility_data_saver_on));
         mIconController.setIconVisibility(mSlotDataSaver, false);
-
 
         // privacy items
         String microphoneString = mResources.getString(PrivacyType.TYPE_MICROPHONE.getNameId());
@@ -438,6 +447,13 @@ public class PhoneStatusBarPolicy
         }
 
         updateAlarm();
+    }
+
+    private final void updateMuteIcon() {
+        final int iconRes = mSeparateNotification ? R.drawable.stat_sys_speaker_silent
+                : R.drawable.stat_sys_ringer_silent;
+        mIconController.setIcon(mSlotMute, iconRes,
+                mResources.getString(R.string.accessibility_ringer_silent));
     }
 
     @Override
@@ -717,6 +733,22 @@ public class PhoneStatusBarPolicy
             mIconController.setIconVisibility(mSlotLocation, false);
         }
     }
+
+    private boolean isSeparateNotification() {
+        return Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.VOLUME_SEPARATE_NOTIFICATION, 0) == 1;
+    }
+
+    private final ContentObserver mSettingObserver = new ContentObserver(new Handler()) {
+        @Override
+        public void onChange(boolean selfChange) {
+            final boolean separate = isSeparateNotification();
+            if (mSeparateNotification != separate) {
+                mSeparateNotification = separate;
+                updateMuteIcon();
+            }
+        }
+    };
 
     private BroadcastReceiver mIntentReceiver = new BroadcastReceiver() {
         @Override
