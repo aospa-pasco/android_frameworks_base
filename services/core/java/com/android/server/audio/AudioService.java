@@ -1046,12 +1046,7 @@ public class AudioService extends IAudioService.Stub
         mUseVolumeGroupAliases = mContext.getResources().getBoolean(
                 com.android.internal.R.bool.config_handleVolumeAliasesUsingVolumeGroups);
 
-        mNotifAliasRing = !DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_SYSTEMUI,
-                SystemUiDeviceConfigFlags.VOLUME_SEPARATE_NOTIFICATION, false);
-
-        DeviceConfig.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_SYSTEMUI,
-                ActivityThread.currentApplication().getMainExecutor(),
-                this::onDeviceConfigChange);
+        mNotifAliasRing = !isSeparateNotification();
 
         mHasAlertSlider = mContext.getResources().getBoolean(R.bool.config_hasAlertSlider)
                 && !TextUtils.isEmpty(mContext.getResources().getString(R.string.alert_slider_state_path))
@@ -1292,22 +1287,6 @@ public class AudioService extends IAudioService.Stub
                         && sVolumeGroupStates.indexOfKey(groupId) >= 0) {
                     streamState.setVolumeGroupState(sVolumeGroupStates.get(groupId));
                 }
-            }
-        }
-    }
-
-    /**
-     * Separating notification volume from ring is NOT of aliasing the corresponding streams
-     * @param properties
-     */
-    private void onDeviceConfigChange(DeviceConfig.Properties properties) {
-        Set<String> changeSet = properties.getKeyset();
-        if (changeSet.contains(SystemUiDeviceConfigFlags.VOLUME_SEPARATE_NOTIFICATION)) {
-            boolean newNotifAliasRing = !properties.getBoolean(
-                    SystemUiDeviceConfigFlags.VOLUME_SEPARATE_NOTIFICATION, CONFIG_DEFAULT_VAL);
-            if (mNotifAliasRing != newNotifAliasRing) {
-                mNotifAliasRing = newNotifAliasRing;
-                updateStreamVolumeAlias(true, TAG);
             }
         }
     }
@@ -9207,6 +9186,8 @@ public class AudioService extends IAudioService.Stub
                     Settings.System.MASTER_MONO), false, this);
             mContentResolver.registerContentObserver(Settings.System.getUriFor(
                     Settings.System.MASTER_BALANCE), false, this);
+            mContentResolver.registerContentObserver(Settings.System.getUriFor(
+                    Settings.System.VOLUME_SEPARATE_NOTIFICATION), false, this);
 
             mEncodedSurroundMode = mSettings.getGlobalInt(
                     mContentResolver, Settings.Global.ENCODED_SURROUND_OUTPUT,
@@ -9243,6 +9224,7 @@ public class AudioService extends IAudioService.Stub
                 updateEncodedSurroundOutput();
                 sendEnabledSurroundFormats(mContentResolver, mSurroundModeChanged);
                 updateAssistantUIdLocked(/* forceUpdate= */ false);
+                updateSeparateNotification();
             }
         }
 
@@ -9261,6 +9243,19 @@ public class AudioService extends IAudioService.Stub
                 mSurroundModeChanged = false;
             }
         }
+
+        private void updateSeparateNotification() {
+            final boolean notifAliasRing = !isSeparateNotification();
+            if (mNotifAliasRing != notifAliasRing) {
+                mNotifAliasRing = notifAliasRing;
+                updateStreamVolumeAlias(true, TAG);
+            }
+        }
+    }
+
+    private boolean isSeparateNotification() {
+        return Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.VOLUME_SEPARATE_NOTIFICATION, 0) == 1;
     }
 
     private void avrcpSupportsAbsoluteVolume(String address, boolean support) {

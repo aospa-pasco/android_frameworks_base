@@ -58,6 +58,7 @@ import android.content.res.ColorStateList;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.content.res.TypedArray;
+import android.database.ContentObserver;
 import android.graphics.Color;
 import android.graphics.Outline;
 import android.graphics.PixelFormat;
@@ -204,9 +205,6 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
     private ViewGroup mDialogRowsView;
     private ViewGroup mRinger;
 
-    private DeviceConfigProxy mDeviceConfigProxy;
-    private Executor mExecutor;
-
     /**
      * Container for the top part of the dialog, which contains the ringer, the ringer drawer, the
      * volume rows, and the ellipsis button. This does not include the live caption button.
@@ -316,6 +314,18 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
     // Number of animating rows
     private int mAnimatingRows = 0;
 
+    private final ContentObserver mSettingObserver = new ContentObserver(mHandler) {
+        @Override
+        public void onChange(boolean selfChange) {
+            final boolean separate = isSeparateNotification();
+            if (mSeparateNotification != separate) {
+                mSeparateNotification = separate;
+                updateRingerModeIconSet();
+                updateNotificationRingerRows();
+            }
+        }
+    };
+
     public VolumeDialogImpl(
             Context context,
             VolumeDialogController volumeDialogController,
@@ -373,13 +383,15 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
             };
         }
 
-        initDimens();
+        mSeparateNotification = isSeparateNotification();
 
-        mDeviceConfigProxy = deviceConfigProxy;
-        mExecutor = executor;
-        mSeparateNotification = mDeviceConfigProxy.getBoolean(DeviceConfig.NAMESPACE_SYSTEMUI,
-                SystemUiDeviceConfigFlags.VOLUME_SEPARATE_NOTIFICATION, false);
+        initDimens();
         updateRingerModeIconSet();
+    }
+
+    private boolean isSeparateNotification() {
+        return Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.VOLUME_SEPARATE_NOTIFICATION, 0) == 1;
     }
 
     /**
@@ -461,8 +473,8 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
 
         mConfigurationController.addCallback(this);
 
-        mDeviceConfigProxy.addOnPropertiesChangedListener(DeviceConfig.NAMESPACE_SYSTEMUI,
-                mExecutor, this::onDeviceConfigChange);
+        mContext.getContentResolver().registerContentObserver(Settings.System.getUriFor(
+                Settings.System.VOLUME_SEPARATE_NOTIFICATION), false, mSettingObserver);
     }
 
     @Override
@@ -470,23 +482,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         mController.removeCallback(mControllerCallbackH);
         mHandler.removeCallbacksAndMessages(null);
         mConfigurationController.removeCallback(this);
-        mDeviceConfigProxy.removeOnPropertiesChangedListener(this::onDeviceConfigChange);
-    }
-
-    /**
-     * Update ringer mode icon based on the config
-     */
-    private void onDeviceConfigChange(DeviceConfig.Properties properties) {
-        Set<String> changeSet = properties.getKeyset();
-        if (changeSet.contains(SystemUiDeviceConfigFlags.VOLUME_SEPARATE_NOTIFICATION)) {
-            boolean newVal = properties.getBoolean(
-                    SystemUiDeviceConfigFlags.VOLUME_SEPARATE_NOTIFICATION, false);
-            if (newVal != mSeparateNotification) {
-                mSeparateNotification = newVal;
-                updateRingerModeIconSet();
-                updateNotificationRingerRows();
-            }
-        }
+        mContext.getContentResolver().unregisterContentObserver(mSettingObserver);
     }
 
     @Override

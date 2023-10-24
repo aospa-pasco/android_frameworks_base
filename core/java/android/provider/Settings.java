@@ -5826,6 +5826,12 @@ public final class Settings {
         public static final String AUTH_RIPPLE_ENABLED = "auth_ripple_enabled";
 
         /**
+         * Whether to show notification volume control slider separate from ring.
+         * @hide
+         */
+        public static final String VOLUME_SEPARATE_NOTIFICATION = "volume_separate_notification";
+
+        /**
          * Keys we no longer back up under the current schema, but want to continue to
          * process when restoring historical backup datasets.
          *

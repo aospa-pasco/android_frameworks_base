@@ -289,6 +289,11 @@ public class SeekBarVolumizer implements OnSeekBarChangeListener, Handler.Callba
                         || (!mAllowRinger && isNotificationOrRing(mStreamType))));
     }
 
+    private boolean isSeparateNotification() {
+        return Settings.System.getInt(mContext.getContentResolver(),
+                    Settings.System.VOLUME_SEPARATE_NOTIFICATION, 0) == 1;
+    }
+
     protected void updateSeekBar() {
         final boolean zenMuted = isZenMuted();
         mSeekBar.setEnabled(!zenMuted);
@@ -300,8 +305,7 @@ public class SeekBarVolumizer implements OnSeekBarChangeListener, Handler.Callba
              * so that when user attempts to slide the notification seekbar out of vibrate the
              * seekbar doesn't wrongly snap back to 0 when the streams aren't aliased
              */
-            if (!DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_SYSTEMUI,
-                    SystemUiDeviceConfigFlags.VOLUME_SEPARATE_NOTIFICATION, false)
+            if (!isSeparateNotification()
                     || mStreamType == AudioManager.STREAM_RING
                     || (mStreamType == AudioManager.STREAM_NOTIFICATION && mMuted)) {
                 mSeekBar.setProgress(0, true);
@@ -397,9 +401,7 @@ public class SeekBarVolumizer implements OnSeekBarChangeListener, Handler.Callba
         // set the time of stop volume
         if ((mStreamType == AudioManager.STREAM_VOICE_CALL
                 || mStreamType == AudioManager.STREAM_RING
-                || (DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_SYSTEMUI,
-                SystemUiDeviceConfigFlags.VOLUME_SEPARATE_NOTIFICATION, false)
-                && mStreamType == AudioManager.STREAM_NOTIFICATION)
+                || (isSeparateNotification() && mStreamType == AudioManager.STREAM_NOTIFICATION)
                 || mStreamType == AudioManager.STREAM_ALARM)) {
             sStopVolumeTime = java.lang.System.currentTimeMillis();
         }
@@ -685,10 +687,8 @@ public class SeekBarVolumizer implements OnSeekBarChangeListener, Handler.Callba
         }
 
         private void updateVolumeSlider(int streamType, int streamValue) {
-            final boolean streamMatch =  !DeviceConfig.getBoolean(DeviceConfig.NAMESPACE_SYSTEMUI,
-                    SystemUiDeviceConfigFlags.VOLUME_SEPARATE_NOTIFICATION, false)
-                    && mNotificationOrRing ? isNotificationOrRing(streamType) :
-                    streamType == mStreamType;
+            final boolean streamMatch = !isSeparateNotification() && mNotificationOrRing
+                    ? isNotificationOrRing(streamType) : streamType == mStreamType;
             if (mSeekBar != null && streamMatch && streamValue != -1) {
                 final boolean muted = mAudioManager.isStreamMute(mStreamType)
                         || streamValue == 0;
