@@ -19,6 +19,7 @@ package com.android.systemui.keyguard.data.quickaffordance
 
 import android.content.Context
 import android.media.AudioManager
+import android.provider.Settings
 import androidx.lifecycle.LiveData
 import androidx.lifecycle.Observer
 import com.android.systemui.R
@@ -49,7 +50,7 @@ import javax.inject.Inject
 
 @SysUISingleton
 class MuteQuickAffordanceConfig @Inject constructor(
-        context: Context,
+        private val context: Context,
         private val userTracker: UserTracker,
         private val userFileManager: UserFileManager,
         private val ringerModeTracker: RingerModeTracker,
@@ -65,7 +66,13 @@ class MuteQuickAffordanceConfig @Inject constructor(
 
     override val pickerName: String = context.getString(R.string.volume_ringer_status_silent)
 
-    override val pickerIconResourceId: Int = R.drawable.ic_notifications_silence
+    override val pickerIconResourceId: Int
+        get() = if (Settings.System.getIntForUser(context.contentResolver,
+            Settings.System.VOLUME_SEPARATE_NOTIFICATION, 0, userTracker.userId) == 1) {
+                R.drawable.ic_speaker_mute
+            } else {
+                R.drawable.ic_notifications_silence
+            }
 
     override val lockScreenState: Flow<KeyguardQuickAffordanceConfig.LockScreenState> =
         ringerModeTracker.ringerModeInternal.asFlow()
@@ -92,7 +99,7 @@ class MuteQuickAffordanceConfig @Inject constructor(
 
                 KeyguardQuickAffordanceConfig.LockScreenState.Visible(
                     Icon.Resource(
-                        R.drawable.ic_notifications_silence,
+                        pickerIconResourceId,
                         ContentDescription.Resource(contentDescriptionRes),
                     ),
                     activationState,
