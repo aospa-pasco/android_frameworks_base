@@ -797,10 +797,10 @@
     <dimen name="go_to_full_shade_appearing_translation">200dp</dimen>
 
     <!-- The width/height of the keyguard bottom area icon view on keyguard. -->
-    <dimen name="keyguard_affordance_fixed_height">48dp</dimen>
-    <dimen name="keyguard_affordance_fixed_width">48dp</dimen>
-    <dimen name="keyguard_affordance_fixed_radius">24dp</dimen>
-    <dimen name="keyguard_affordance_fixed_padding">12dp</dimen>
+    <dimen name="keyguard_affordance_fixed_height">56dp</dimen>
+    <dimen name="keyguard_affordance_fixed_width">56dp</dimen>
+    <dimen name="keyguard_affordance_fixed_radius">28dp</dimen>
+    <dimen name="keyguard_affordance_fixed_padding">16dp</dimen>
 
     <!-- Amount the button should shake when it's not long-pressed for long enough. -->
     <dimen name="keyguard_affordance_shake_amplitude">8dp</dimen>

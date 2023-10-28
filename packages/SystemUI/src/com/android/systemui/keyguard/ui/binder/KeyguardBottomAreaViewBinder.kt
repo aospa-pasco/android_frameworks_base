@@ -67,7 +67,7 @@ import kotlinx.coroutines.launch
 object KeyguardBottomAreaViewBinder {
 
     private const val EXIT_DOZE_BUTTON_REVEAL_ANIMATION_DURATION_MS = 250L
-    private const val SCALE_SELECTED_BUTTON = 1.23f
+    private const val SCALE_SELECTED_BUTTON = 1.1f
     private const val DIM_ALPHA = 0.3f
 
     /**
@@ -380,8 +380,11 @@ object KeyguardBottomAreaViewBinder {
         private val falsingManager: FalsingManager?,
     ) : View.OnTouchListener {
 
-        private val longPressDurationMs = ViewConfiguration.getLongPressTimeout().toLong()
+        private var longPressDurationMs = LONG_PRESS_DURATION_MS_DEACTIVATED
         private var longPressAnimator: ViewPropertyAnimator? = null
+
+        private val touchSlop: Int
+            get() = if (viewModel.isActivated) TOUCH_SLOP_ACTIVATED else TOUCH_SLOP_DEACTIVATED
 
         private val areAllPrimitivesSupported = vibratorHelper?.areAllPrimitivesSupported(
             VibrationEffect.Composition.PRIMITIVE_TICK,
@@ -401,6 +404,11 @@ object KeyguardBottomAreaViewBinder {
                             // When not using a stylus, we require a long-press to activate the
                             // quick affordance, mostly to do "falsing" (e.g. protect from false
                             // clicks in the pocket/bag).
+                            longPressDurationMs = if (viewModel.isActivated) {
+                                LONG_PRESS_DURATION_MS_ACTIVATED
+                            } else {
+                                LONG_PRESS_DURATION_MS_DEACTIVATED
+                            }
                             longPressAnimator =
                                 view
                                     .animate()
@@ -428,7 +436,7 @@ object KeyguardBottomAreaViewBinder {
                         // Moving too far while performing a long-press gesture cancels that
                         // gesture.
                         val distanceMoved = distanceMoved(event)
-                        if (distanceMoved > ViewConfiguration.getTouchSlop()) {
+                        if (distanceMoved > touchSlop) {
                             cancel()
                         }
                     }
@@ -441,7 +449,7 @@ object KeyguardBottomAreaViewBinder {
                         // the pointer performs a click.
                         if (
                             viewModel.configKey != null &&
-                                distanceMoved(event) <= ViewConfiguration.getTouchSlop() &&
+                                distanceMoved(event) <= touchSlop &&
                                 falsingManager?.isFalseTap(FalsingManager.NO_PENALTY) == false
                         ) {
                             dispatchClick(viewModel.configKey)
@@ -535,7 +543,11 @@ object KeyguardBottomAreaViewBinder {
         }
 
         companion object {
-            private const val PRESSED_SCALE = 1.5f
+            private const val PRESSED_SCALE = 1.3f
+            private const val LONG_PRESS_DURATION_MS_ACTIVATED = 400L
+            private const val LONG_PRESS_DURATION_MS_DEACTIVATED = 200L
+            private const val TOUCH_SLOP_ACTIVATED = 8 // ViewConfiguration.TOUCH_SLOP
+            private const val TOUCH_SLOP_DEACTIVATED = 12
 
             /**
              * Returns `true` if the tool type at the given pointer index is an accurate tool (like
