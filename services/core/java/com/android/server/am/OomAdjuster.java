@@ -507,10 +507,9 @@ public class OomAdjuster {
 
     void conditionallyEnableProactiveKills() {
         File mglru = new File("/sys/kernel/mm/lru_gen/enabled");
-        File psi = new File("/proc/pressure/memory");
         File lmk_kernel = new File("/sys/module/lowmemorykiller/parameters/minfree");
 
-        if (!lmk_kernel.exists() && mglru.exists() && psi.exists()) {
+        if (!lmk_kernel.exists() && mglru.exists()) {
             Slog.i(TAG, "Detected kernel with modern mm setup, enabling Proactive Kills.");
             mProactiveKillsEnabled = true;
         }
