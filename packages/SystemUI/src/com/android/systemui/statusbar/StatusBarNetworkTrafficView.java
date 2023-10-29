@@ -20,7 +20,6 @@ import android.content.IntentFilter;
 import android.content.res.Resources;
 import android.database.ContentObserver;
 import android.graphics.Canvas;
-import android.graphics.Paint.FontMetricsInt;
 import android.graphics.Rect;
 import android.net.ConnectivityManager;
 import android.net.TrafficStats;
@@ -51,6 +50,14 @@ public class StatusBarNetworkTrafficView extends TextView implements StatusIconD
     public static final String SLOT = "network_traffic";
     private static final String TAG = "StatusBarNetworkTrafficView";
     private static final int REFRESH_INTERVAL_MS = 1000;
+
+    // TextView attributes
+    private static final float
+        LINE_SPACING_MULT = 0.8f,
+        SPEED_SIZE_MULT = 0.7f,
+        UNIT_SIZE_MULT = 0.5f;
+
+    private static final int CANVAS_Y_OFFSET_PX = -6;
 
     private boolean mEnabled, mAutoHide, mNetworkConnected, mVisible, mAttached;
     private boolean mScreenOn = true;
@@ -100,7 +107,7 @@ public class StatusBarNetworkTrafficView extends TextView implements StatusIconD
 
         setVisibility(View.GONE);
         setMaxLines(2);
-        setLineSpacing(0f, 0.8f);
+        setLineSpacing(0f, LINE_SPACING_MULT);
         setTextAppearance(R.style.TextAppearance_QS_Status);
         setIncludeFontPadding(false);
         setGravity(Gravity.CENTER);
@@ -145,14 +152,12 @@ public class StatusBarNetworkTrafficView extends TextView implements StatusIconD
 
     /**
      * Since TextView adds some unwanted padding above the text, our view wasn't being
-     * properly centered vertically. To workaround this problem, offset the canvas
-     * vertically by the difference between the font metrics' recommended and maximum values.
-     * Ref: https://stackoverflow.com/a/23063015
+     * properly centered vertically. To workaround this problem, move the canvas up by
+     * CANVAS_Y_OFFSET_PX determined by manual observation using various fonts.
      */
     @Override
     protected void onDraw(Canvas canvas) {
-        FontMetricsInt fmi = getPaint().getFontMetricsInt();
-        canvas.translate(0, fmi.top - fmi.ascent - fmi.bottom + fmi.descent);
+        canvas.translate(0, CANVAS_Y_OFFSET_PX);
         super.onDraw(canvas);
     }
 
@@ -290,9 +295,10 @@ public class StatusBarNetworkTrafficView extends TextView implements StatusIconD
         }
 
         return new SpannableStringBuilder()
-                .append(sizes[0], new RelativeSizeSpan(0.7f), SPAN_EXCLUSIVE_EXCLUSIVE)
+                .append(sizes[0], new RelativeSizeSpan(SPEED_SIZE_MULT), SPAN_EXCLUSIVE_EXCLUSIVE)
                 .append("\n")
-                .append(sizes[1] + "/s", new RelativeSizeSpan(0.5f), SPAN_EXCLUSIVE_EXCLUSIVE);
+                .append(sizes[1] + "/s",
+                        new RelativeSizeSpan(UNIT_SIZE_MULT), SPAN_EXCLUSIVE_EXCLUSIVE);
     }
 
 }
