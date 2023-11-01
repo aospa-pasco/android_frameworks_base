@@ -148,7 +148,7 @@
         android:title="@string/battery"
         android:icon="@*android:drawable/ic_battery"
         android:summary="%s"
-        android:entries="@array/battery_options_custom" />
+        android:entries="@array/battery_options" />
 
     <com.android.systemui.tuner.ClockPreference
         android:title="@string/tuner_time"

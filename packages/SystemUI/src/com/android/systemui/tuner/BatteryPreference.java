@@ -14,7 +14,6 @@
 
 package com.android.systemui.tuner;
 
-import static android.provider.Settings.System.SHOW_BATTERY_ICON;
 import static android.provider.Settings.System.SHOW_BATTERY_PERCENT;
 
 import android.content.Context;
@@ -32,14 +31,12 @@ import com.android.systemui.statusbar.phone.StatusBarIconController;
 
 public class BatteryPreference extends DropDownPreference implements TunerService.Tunable {
 
-    private static final String PERCENT_ONLY = "percent_only";
     private static final String PERCENT = "percent";
     private static final String DEFAULT = "default";
     private static final String DISABLED = "disabled";
 
     private final String mBattery;
     private boolean mBatteryEnabled;
-    private boolean mHasIcon;
     private boolean mHasPercentage;
     private ArraySet<String> mHideList;
     private boolean mHasSetValue;
@@ -47,7 +44,7 @@ public class BatteryPreference extends DropDownPreference implements TunerServic
     public BatteryPreference(Context context, AttributeSet attrs) {
         super(context, attrs);
         mBattery = context.getString(com.android.internal.R.string.status_bar_battery);
-        setEntryValues(new CharSequence[] {PERCENT_ONLY, PERCENT, DEFAULT, DISABLED });
+        setEntryValues(new CharSequence[] {PERCENT, DEFAULT, DISABLED });
     }
 
     @Override
@@ -55,8 +52,6 @@ public class BatteryPreference extends DropDownPreference implements TunerServic
         super.onAttached();
         mHasPercentage = Settings.System.getInt(getContext().getContentResolver(),
                 SHOW_BATTERY_PERCENT, 0) != 0;
-        mHasIcon = Settings.System.getInt(getContext().getContentResolver(),
-                SHOW_BATTERY_ICON, 1) != 0;
         Dependency.get(TunerService.class).addTunable(this, StatusBarIconController.ICON_HIDE_LIST);
     }
 
@@ -78,7 +73,7 @@ public class BatteryPreference extends DropDownPreference implements TunerServic
             // preference to handle updates.
             mHasSetValue = true;
             if (mBatteryEnabled && mHasPercentage) {
-                setValue(mHasIcon ? PERCENT : PERCENT_ONLY);
+                setValue(PERCENT);
             } else if (mBatteryEnabled) {
                 setValue(DEFAULT);
             } else {
@@ -89,11 +84,9 @@ public class BatteryPreference extends DropDownPreference implements TunerServic
 
     @Override
     protected boolean persistString(String value) {
-        final boolean v = PERCENT.equals(value) || PERCENT_ONLY.equals(value);
+        final boolean v = PERCENT.equals(value);
         MetricsLogger.action(getContext(), MetricsEvent.TUNER_BATTERY_PERCENTAGE, v);
         Settings.System.putInt(getContext().getContentResolver(), SHOW_BATTERY_PERCENT, v ? 1 : 0);
-        Settings.System.putInt(getContext().getContentResolver(), SHOW_BATTERY_ICON,
-                PERCENT_ONLY.equals(value) ? 0 : 1);
         if (DISABLED.equals(value)) {
             mHideList.add(mBattery);
         } else {
