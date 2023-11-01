@@ -301,7 +301,9 @@ constructor(
 
         // click actions
         clock.setOnClickListener(this)
+        clock.setOnLongClickListener(this)
         date.setOnClickListener(this)
+        date.setOnLongClickListener(this)
         setBatteryClickable(true)
     }
 
