@@ -608,7 +608,7 @@ public class VolumeDialogImpl implements VolumeDialog, Dumpable,
         mDialogView = mDialog.findViewById(R.id.volume_dialog);
         mDialogView.setAlpha(0);
         mDialogView.setLayoutDirection(
-                mVolumePanelOnLeft ? LAYOUT_DIRECTION_LTR : LAYOUT_DIRECTION_RTL);
+                (mOriginalGravity == 19) ? LAYOUT_DIRECTION_LTR : LAYOUT_DIRECTION_RTL);
         mDialog.setCanceledOnTouchOutside(true);
         mDialog.setOnShowListener(dialog -> {
             mDialogView.getViewTreeObserver().addOnComputeInternalInsetsListener(this);
