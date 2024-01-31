@@ -25,4 +25,7 @@
     <!-- Height of the faceunlock image view -->
     <dimen name="keyguard_face_unlock_margin_bottom">@dimen/keyguard_lock_height</dimen>
 
+    <!-- HD calling icon -->
+    <dimen name="signal_icon_viewport_size">24dp</dimen>
+
 </resources>

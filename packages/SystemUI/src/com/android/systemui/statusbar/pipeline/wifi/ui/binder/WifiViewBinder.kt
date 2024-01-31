@@ -30,6 +30,7 @@ import com.android.systemui.statusbar.StatusBarIconView
 import com.android.systemui.statusbar.StatusBarIconView.STATE_HIDDEN
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.ModernStatusBarViewBinding
 import com.android.systemui.statusbar.pipeline.shared.ui.binder.ModernStatusBarViewVisibilityHelper
+import com.android.systemui.statusbar.pipeline.wifi.ui.model.VoWifiIcon
 import com.android.systemui.statusbar.pipeline.wifi.ui.model.WifiIcon
 import com.android.systemui.statusbar.pipeline.wifi.ui.viewmodel.LocationBasedWifiViewModel
 import kotlinx.coroutines.InternalCoroutinesApi
@@ -64,6 +65,7 @@ object WifiViewBinder {
         val airplaneSpacer = view.requireViewById<View>(R.id.wifi_airplane_spacer)
         val signalSpacer = view.requireViewById<View>(R.id.wifi_signal_spacer)
         val wifiStandardView = view.requireViewById<ImageView>(R.id.wifi_standard)
+        val voWifiView = view.requireViewById<ImageView>(R.id.vowifi)
 
         view.isVisible = true
         iconView.isVisible = true
@@ -114,6 +116,7 @@ object WifiViewBinder {
                         activityInView.imageTintList = tintList
                         activityOutView.imageTintList = tintList
                         wifiStandardView.imageTintList = tintList
+                        voWifiView.imageTintList = tintList
                         dotView.setDecorColor(tint)
                     }
                 }
@@ -147,6 +150,15 @@ object WifiViewBinder {
                 launch {
                     viewModel.isSignalSpacerVisible.distinctUntilChanged().collect { visible ->
                         signalSpacer.isVisible = visible
+                    }
+                }
+
+                launch {
+                    viewModel.voWifiIcon.distinctUntilChanged().collect { voWifiIcon ->
+                        voWifiView.isVisible = voWifiIcon is VoWifiIcon.Visible
+                        if (voWifiIcon is VoWifiIcon.Visible) {
+                            IconViewBinder.bind(voWifiIcon.icon, voWifiView)
+                        }
                     }
                 }
 

@@ -27,6 +27,7 @@ import com.android.systemui.dagger.qualifiers.Application
 import com.android.systemui.log.table.TableLogBuffer
 import com.android.systemui.log.table.TableLogBufferFactory
 import com.android.systemui.log.table.logDiffsForTable
+import com.android.systemui.statusbar.pipeline.ims.data.repository.ImsRepositoryImpl
 import com.android.systemui.statusbar.pipeline.mobile.data.model.NetworkNameModel
 import com.android.systemui.statusbar.pipeline.mobile.data.model.SubscriptionModel
 import com.android.systemui.statusbar.pipeline.mobile.data.repository.MobileConnectionRepository
@@ -60,6 +61,7 @@ class FullMobileConnectionRepository(
     @Application scope: CoroutineScope,
     private val mobileRepoFactory: MobileConnectionRepositoryImpl.Factory,
     private val carrierMergedRepoFactory: CarrierMergedConnectionRepository.Factory,
+    private val imsRepoFactory: ImsRepositoryImpl.Factory,
 ) : MobileConnectionRepository {
     /**
      * Sets whether this connection is a typical mobile connection or a carrier merged connection.
@@ -91,6 +93,7 @@ class FullMobileConnectionRepository(
             subscriptionModel,
             defaultNetworkName,
             networkNameSeparator,
+            imsRepoFactory.build(subId)
         )
     }
 
@@ -463,6 +466,15 @@ class FullMobileConnectionRepository(
                 activeRepo.value.isAllowedDuringAirplaneMode.value,
             )
 
+    override val imsState =
+        activeRepo
+            .flatMapLatest { it.imsState }
+            .stateIn(
+                scope,
+                SharingStarted.WhileSubscribed(),
+                activeRepo.value.imsState.value,
+            )
+
     class Factory
     @Inject
     constructor(
@@ -470,6 +482,7 @@ class FullMobileConnectionRepository(
         private val logFactory: TableLogBufferFactory,
         private val mobileRepoFactory: MobileConnectionRepositoryImpl.Factory,
         private val carrierMergedRepoFactory: CarrierMergedConnectionRepository.Factory,
+        private val imsRepoFactory: ImsRepositoryImpl.Factory
     ) {
         fun build(
             subId: Int,
@@ -491,6 +504,7 @@ class FullMobileConnectionRepository(
                 scope,
                 mobileRepoFactory,
                 carrierMergedRepoFactory,
+                imsRepoFactory,
             )
         }
 

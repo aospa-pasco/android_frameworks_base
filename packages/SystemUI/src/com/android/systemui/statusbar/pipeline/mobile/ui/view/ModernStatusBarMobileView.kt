@@ -20,12 +20,15 @@ import android.content.Context
 import android.util.AttributeSet
 import android.view.LayoutInflater
 import android.widget.LinearLayout
+import android.widget.ImageView
 import com.android.systemui.R
 import com.android.systemui.statusbar.StatusBarIconView.getVisibleStateString
 import com.android.systemui.statusbar.pipeline.mobile.ui.MobileViewLogger
 import com.android.systemui.statusbar.pipeline.mobile.ui.binder.MobileIconBinder
 import com.android.systemui.statusbar.pipeline.mobile.ui.viewmodel.LocationBasedMobileViewModel
 import com.android.systemui.statusbar.pipeline.shared.ui.view.ModernStatusBarView
+import com.android.systemui.statusbar.pipeline.shared.ui.binder.ModernStatusBarViewBinding
+import kotlin.math.roundToInt
 
 class ModernStatusBarMobileView(
     context: Context,
@@ -42,6 +45,20 @@ class ModernStatusBarMobileView(
             "isCollecting=${binding.isCollecting()}, " +
             "visibleState=${getVisibleStateString(visibleState)}); " +
             "viewString=${super.toString()}"
+    }
+
+    override fun initView(slot: String, bindingCreator: () -> ModernStatusBarViewBinding) {
+        super.initView(slot, bindingCreator)
+        // Resize HD icon to make fit into the mobile view
+        val signalSize = context.resources.getDimensionPixelSize(R.dimen.signal_icon_size)
+        val viewportSize = context.resources.getDimensionPixelSize(
+                R.dimen.signal_icon_viewport_size
+        )
+        val mobileHd = requireViewById<ImageView>(R.id.mobile_hd)
+        val lp = mobileHd.layoutParams
+        lp.height = (lp.height * (signalSize / viewportSize.toFloat())).roundToInt()
+        lp.width = (lp.width * (signalSize / viewportSize.toFloat())).roundToInt()
+        mobileHd.layoutParams = lp
     }
 
     override fun onFinishInflate() {
