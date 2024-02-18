@@ -148,10 +148,10 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
         refreshRate = dimens[2];
         int vidBitRate = width * height * refreshRate / VIDEO_FRAME_RATE
                 * VIDEO_FRAME_RATE_TO_RESOLUTION_RATIO;
-        mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.H264);
+        mMediaRecorder.setVideoEncoder(MediaRecorder.VideoEncoder.HEVC);
         mMediaRecorder.setVideoEncodingProfileLevel(
-                MediaCodecInfo.CodecProfileLevel.AVCProfileHigh,
-                MediaCodecInfo.CodecProfileLevel.AVCLevel3);
+                MediaCodecInfo.CodecProfileLevel.HEVCProfileMain,
+                MediaCodecInfo.CodecProfileLevel.HEVCMainTierLevel3);
         mMediaRecorder.setVideoSize(width, height);
         mMediaRecorder.setVideoFrameRate(refreshRate);
         mMediaRecorder.setVideoEncodingBitRate(vidBitRate);
@@ -209,7 +209,7 @@ public class ScreenMediaRecorder extends MediaProjection.Callback {
      */
     private int[] getSupportedSize(final int screenWidth, final int screenHeight, int refreshRate)
             throws IOException {
-        String videoType = MediaFormat.MIMETYPE_VIDEO_AVC;
+        String videoType = MediaFormat.MIMETYPE_VIDEO_HEVC;
 
         // Get max size from the encoder,
         // implicitly decoder supports this size and
