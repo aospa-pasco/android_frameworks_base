@@ -98,7 +98,7 @@ public class PropImitationHooks {
     );
 
     private static volatile String[] sCertifiedProps;
-    private static volatile String sStockFp, sNetflixModel;
+    private static volatile String sStockFp, sFinskyFp, sNetflixModel;
 
     private static volatile String sProcessName;
     private static volatile boolean sIsPixelDevice, sIsGms, sIsFinsky, sIsPhotos;
@@ -120,6 +120,7 @@ public class PropImitationHooks {
 
         sCertifiedProps = res.getStringArray(R.array.config_certifiedBuildProperties);
         sStockFp = res.getString(R.string.config_stockFingerprint);
+        sFinskyFp = res.getString(R.string.config_finskyFingerprint);
         sNetflixModel = res.getString(R.string.config_netflixSpoofModel);
 
         sProcessName = processName;
@@ -134,6 +135,9 @@ public class PropImitationHooks {
          */
         if (sIsGms) {
             setCertifiedPropsForGms();
+        } else if (!sFinskyFp.isEmpty() && sIsFinsky) {
+            dlog("Setting certified fingerprint for: " + packageName);
+            setPropValue("FINGERPRINT", sFinskyFp);
         } else if (!sStockFp.isEmpty() && packageName.equals(PACKAGE_ARCORE)) {
             dlog("Setting stock fingerprint for: " + packageName);
             setPropValue("FINGERPRINT", sStockFp);
