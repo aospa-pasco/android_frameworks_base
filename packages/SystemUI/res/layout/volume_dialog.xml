@@ -91,7 +91,7 @@
                     android:orientation="horizontal">
                         <!-- volume rows added and removed here! :-) -->
                 </LinearLayout>
-                <com.android.systemui.animation.view.LaunchableFrameLayout
+                <FrameLayout
                     android:id="@+id/settings_container"
                     android:layout_width="wrap_content"
                     android:layout_height="wrap_content"
@@ -109,7 +109,7 @@
                         android:background="@drawable/ripple_drawable_20dp"
                         android:tint="?androidprv:attr/colorAccent"
                         android:soundEffectsEnabled="false" />
-                </com.android.systemui.animation.view.LaunchableFrameLayout>
+                </FrameLayout>
             </LinearLayout>
 
         </LinearLayout>
